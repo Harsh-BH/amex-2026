@@ -1,0 +1,23 @@
+{
+  "$comment": "Project-scoped Claude Code settings for Amex Campus Challenge R1. Allow-lists safe read-only data-inspection so Claude isn't prompted for routine analysis. Anything that writes/commits/deletes still prompts.",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(python3 *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ],
+    "deny": [
+      "Edit(docs/**)",
+      "Write(docs/**)"
+    ],
+    "$comment_deny": "docs/ holds the official, read-only challenge files. Reads are fine; edits/writes are denied so we never mutate the shared dataset."
+  }
+}
