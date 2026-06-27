@@ -20,7 +20,7 @@ OUT = Path(__file__).resolve().parent.parent / "data" / "scores_v1.csv"
 WEIGHTS = {
     "spending":       (1.00, 0.70, 0.70),   # interchange ≈ spend volume
     "balance_int":    (0.00, 0.80, 0.40),   # carried-balance interest
-    "borrow_int":     (0.00, 0.00, 0.80),   # lending-line interest
+    "borrow_int":     (0.00, 0.00, 0.40),   # lending-line interest (stage-6: halved 0.80->0.40 — f17 is line SIZE not interest earned; was driving 62% of top-20%)
     "depth":          (0.20, 0.20, 0.20),   # extra cards / supp fees
     "rewards_cost":   (0.50, 0.40, 0.40),   # redeemed + discounted liability
     "perks_cost":     (0.30, 0.30, 0.30),   # lounge/airline/cab/ent credits
