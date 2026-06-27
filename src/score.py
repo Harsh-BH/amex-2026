@@ -68,10 +68,12 @@ def revenue_terms(df: pd.DataFrame) -> pd.DataFrame:
 
 def cost_terms(df: pd.DataFrame) -> pd.DataFrame:
     """Each term a [0,1] rank; missing -> 0 (that cost doesn't exist for the member)."""
-    redemption_intensity = df.f21 / (df.f4 + df.f21)               # [0,1]; low => breakage => cheaper
+    denom = df.f4 + df.f21
+    redemption_intensity = (df.f21 / denom).where(denom > 0)       # NaN if no rewards history; low => breakage => cheaper
     benefit = df[["f13", "f14", "f15", "f16"]].sum(axis=1, min_count=1)
     t = pd.DataFrame(index=df.index)
-    t["rewards_cost"]   = _rank(df.f21) + REWARDS_LAMBDA * _rank(df.f4) * (1 - redemption_intensity)
+    rewards_composite   = _rank(df.f21) + REWARDS_LAMBDA * _rank(df.f4) * (1 - redemption_intensity)
+    t["rewards_cost"]   = rewards_composite.rank(pct=True)         # re-rank composite back to [0,1] (every term must be in [0,1])
     t["perks_cost"]     = _rank(benefit)
     t["servicing_cost"] = df.f2.fillna(0)                          # already ~0/1
     return t.fillna(0.0)
@@ -121,6 +123,7 @@ def _self_check():
     rt, ct = revenue_terms(demo), cost_terms(demo)
     assert rt.notna().all().all() and ct.notna().all().all(), "terms must have no NaN after fill"
     assert (rt.to_numpy() >= 0).all() and (rt.to_numpy() <= 1.001).all(), "rev terms out of [0,1]"
+    assert (ct.to_numpy() >= 0).all() and (ct.to_numpy() <= 1.001).all(), "cost terms out of [0,1]"
     assert risk_factor(demo).between(0, RISK_CAP).all()
     s = score(demo)
     assert s.notna().all()
