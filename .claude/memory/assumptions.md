@@ -20,3 +20,4 @@ _Every assumption we rely on. Status: ✅ verified · ⚠ unverified · ❌ disp
 - That missing = 0 without a stated reason.
 - That overfitting the public 70% is safe (hidden 30% decides).
 - That a high-accuracy black box is acceptable without business logic.
+- That objective weighting (CRITIC/entropy/PCA) can set the framework weights — with no label they reward dispersion, not profit (they up-weight `logins`/`email_open`); use as cross-check only. See `feature-notes.md` EDA round 2.

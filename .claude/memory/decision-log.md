@@ -5,6 +5,39 @@ Newest at top. Reverse a decision with a new entry referencing the old one._
 
 ---
 
+## 2026-06-27 — Stage-6 weight calibration: `borrow_int` hedged 0.80→0.40 (sensitivity-driven)
+**Decision:** Halve the lender `borrow_int` weight 0.80→0.40 in `src/score.py`. Per-term sensitivity
+(`src/calibrate.py`) showed `borrow_int` = rank of lend-line **size** (`f17`) was the #1 lever — dropping it
+churned 62% of the top-20% — but line size ≠ interest *earned*. Chose the **down-weight hedge** (user pick)
+over redefining it utilization-aware or keeping as-is. Effect: borrow_int demoted #1→#4 lever; top-20%
+rebalanced lender 64.6%→43.1% (≈ 41.5% pop share), revolver 24.6%→36.8%, transactor 10.8%→20.1%; 22.1% of
+top-20% changed (Spearman 0.957); stability held (subsample 0.998, weight-perturb 0.836); no knife-edge term.
+Weight table + sensitivity in [[framework-design]]; logged in [[experiment-history]] (v1.1).
+**Rationale:** No label / 0-of-10 submissions → numeric calibration is premature; stage-6 = robustness +
+business review only. Cutting reliance on a debatable capacity proxy de-risks the hidden 30% without re-design.
+`depth`/`servicing_cost` have near-zero leverage (candidates to drop later, YAGNI).
+**Verification:** `src/calibrate.py` (leverage), `src/validation.py` (stability), live v1↔v1.1 overlap. Also
+built `src/compare.py` (baseline agreement) + `src/llm_judge.py` (OpenAI judge — **indifferent** vs naive spend
+on contested pairs; convergent-validity cross-check, NOT ground truth). NOT submitted.
+**Status:** Active. **Next: LB-informed calibration + first submission decision** (validate proxies agree, then spend #1).
+
+## 2026-06-27 — Framework v1 design APPROVED (revenue−cost × risk, unified eq + per-segment weights)
+**Decision:** Adopt `score = (Revenue − Cost) × (1 − Risk)`, all term inputs rank-normalized to [0,1],
+as **one equation for all 500K** with **weights keyed by segment** (transactor/revolver/lender). Three
+user-approved structural choices: **(1)** unified equation, weights shift by segment (not separate
+per-segment models); **(2)** spend volume = cohort-rank of category spend `f6–f10` for the 77% with a
+breakdown, falling back to `rank(f5)` for the 23% without (tagged) — never raw `f5` as primary volume;
+**(3)** risk shaves the **whole** score multiplicatively. Drop `f18` (r=0.92 vs `f17`). Rewards cost =
+redeemed `f21` + breakage-discounted `f4` liability. v1 weights = business priors; calibration deferred
+to stage 6. Full spec → [[framework-design]].
+**Rationale:** Implements the lit-converged skeleton ([[research-findings]]) with the EDA's hard findings
+baked in — `f5` saturation ([[assumptions]] A1) and the CRITIC/entropy weighting trap ([[feature-notes]]).
+Unified-eq keeps one defensible ranking (no gameable cross-segment merge); cohort-rank fallback invents
+no data; multiplicative whole-score risk matches the prior research direction and is simplest for v1.
+**Verification:** Designed via brainstorming skill; 3 decisions chosen by user. Two named v1 ceilings
+logged in [[framework-design]] (risk-on-whole-score; uncalibrated weights). NOT yet implemented/scored.
+**Status:** Active. **Next: implementation plan → score 500K → top-20% stability validation (no submission until it passes).**
+
 ## 2026-06-27 — Research phase CLOSED (round 3): diminishing returns; move to build
 **Decision:** Stop literature scouting after 3 rounds (~70 verified works). Adopt from round 3: **(1) MIA missingness-as-signal** — encode structured-missing flags as signed terms, never fill-0 (Twala 2008); **(2) AMPI** non-compensatory aggregation as an A/B candidate vs weighted sum (Mazziotta-Pareto 2018); **(3) segment-aware transactor/revolver** profit terms, NOT raw-`f5` ranking (So-Thomas-Seow-Mues 2014; Fed FEDS 2022 — top spenders ≠ most profitable); **(4) contingent-liability `f4` discount** ~80–90% via 17–18% breakage, modulated per-member by `f21/f4` + engagement (Gault 2012, IATA, Chun 2020); **(5) 4-family label-free validation** (spectral SML, Monte-Carlo+Sobol, bootstrap rank-stability, weak-supervision proxy + Lorenz/Gini).
 **Rationale:** Round 3's own verdict = diminishing returns: YES — the framework's structure is now redundantly covered; further effort better spent implementing + A/B-testing. Honors Semantic-Scholar-dead constraint (HTTP 402).
