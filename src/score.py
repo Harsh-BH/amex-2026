@@ -61,7 +61,7 @@ def revenue_terms(df: pd.DataFrame) -> pd.DataFrame:
     t = pd.DataFrame(index=df.index)
     t["spending"]    = spend_volume_rank(df)
     t["balance_int"] = _rank(df.f1)
-    t["borrow_int"]  = df.f17.notna().astype(int) * _rank(df.f17)   # 0 for non-lenders
+    t["borrow_int"]  = _rank(df.f17)                                # NaN for non-lenders -> 0 contribution via fillna below
     t["depth"]       = _rank(df.f19.fillna(0) + df.f20.fillna(0))
     return t.fillna(0.0)
 
