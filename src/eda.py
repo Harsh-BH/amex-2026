@@ -101,11 +101,31 @@ class PremierEDA:
                 [["var_a", "var_b", "a", "b", "r"]]
                 .sort_values("r", key=abs, ascending=False).reset_index(drop=True))
 
+    def corr_order(self, method: str = "spearman") -> pd.DataFrame:
+        """Rank features by overall correlation strength, strongest to weakest."""
+        corr = self.df[FEATS].corr(method=method).abs()
+        strength = (corr.sum() - 1) / (len(FEATS) - 1)
+        order = strength.sort_values(ascending=False)
+        strongest_partner = {}
+        strongest_r = {}
+        for c in order.index:
+            peers = corr.loc[c].drop(c)
+            top = peers.idxmax()
+            strongest_partner[c] = SHORT[top]
+            strongest_r[c] = round(self.df[[c, top]].corr(method=method).iloc[0, 1], 2)
+        return pd.DataFrame({
+            "code": order.index,
+            "variable": [SHORT[c] for c in order.index],
+            "corr_strength": order.round(3).values,
+            "strongest_partner": [strongest_partner[c] for c in order.index],
+            "strongest_r": [strongest_r[c] for c in order.index],
+        }).reset_index(drop=True)
+
     def segments(self) -> pd.DataFrame:
         """Behavioral archetypes by mean profile (transactor/revolver/lender; rewards population)."""
         g = self.df.groupby(self._segment())
         out = pd.DataFrame({
-            "n": g.size(), "share%": (g.size() / len(df) * 100).round(1),
+            "n": g.size(), "share%": (g.size() / len(self.df) * 100).round(1),
             "total_spend": g.f5.mean().round(0), "revolve_bal": g.f1.mean().round(0),
             "risk_score": g.f11.mean().round(4), "rewards_bal": g.f4.mean().round(0),
             "cancel_calls": g.f2.mean().round(3),
@@ -190,11 +210,13 @@ class PremierEDA:
     def plot_corr(self, method: str = "spearman"):
         import matplotlib.pyplot as plt
         corr = self.df[FEATS].corr(method=method)
+        order = (corr.abs().sum() - 1).sort_values(ascending=False).index.tolist()
+        corr = corr.loc[order, order]
         fig, ax = plt.subplots(figsize=(9, 8))
         im = ax.imshow(corr, cmap="RdBu_r", vmin=-1, vmax=1)
-        labels = [SHORT[c] for c in FEATS]
-        ax.set_xticks(range(len(FEATS))); ax.set_xticklabels(labels, rotation=90, fontsize=7)
-        ax.set_yticks(range(len(FEATS))); ax.set_yticklabels(labels, fontsize=7)
+        labels = [SHORT[c] for c in order]
+        ax.set_xticks(range(len(order))); ax.set_xticklabels(labels, rotation=90, fontsize=7)
+        ax.set_yticks(range(len(order))); ax.set_yticklabels(labels, fontsize=7)
         fig.colorbar(im, fraction=0.046); ax.set_title(f"Feature correlation ({method})"); fig.tight_layout(); return fig
 
     def plot_missingness(self):

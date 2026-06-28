@@ -33,6 +33,10 @@ American Express Campus Challenge 2026, **Round 1** — rank 500K Premier cardme
 - [ ] Phase: Score 500K + validate top-20% + first submission.
 - [ ] Phase: Iterate (≤10) + final documentation.
 
+## Tooling
+- **EDA:** `src/eda.py` (`PremierEDA` class + `add_features`), notebook `notebooks/eda.ipynb`. Env: `.venv` (py3.14, pandas 3.0). Data pickle-cached at `data/premier.pkl`.
+- **LLM cell explanations:** `src/eda.py`-paired `src/explain.py` → `show(obj, "label")` displays a table/chart AND an OpenAI plain-English explanation (text=gpt-4o-mini, charts=gpt-4o vision). stdlib `urllib`, no `openai` dep. **`OPENAI_API_KEY` lives in `.env` (gitignored)** — user shared it in chat, so rotate when convenient.
+
 ## Key files
 - Data: `docs/6a3cb6104933b_campus_challenge_r1_data.xlsx`
 - Dictionary: `docs/6a3cb624df197_feature_description.xlsx`
