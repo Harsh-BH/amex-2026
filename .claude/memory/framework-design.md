@@ -100,4 +100,21 @@ submission-#1 signal; do not grid-search a proxy. Diagnostics: `src/compare.py` 
 - **Top-20% stability**: bootstrap resample + weight perturbation → measure top-20% membership churn.
 - **Label-free sanity**: Lorenz/Gini of the score; transactor/revolver/lender profiles plausible;
   top & bottom tail face-validity.
+- **Revenue capture / top-quintile lift** (`src/validation.py:revenue_capture`, `spend_only_overlap`):
+  the closest computable proxy for the graded top-20%-overlap metric — does our top-20% hold a
+  disproportionate share of each raw revenue driver? (whale-curve concentration; ZILN/2304.03038 lift.)
 - **No leaderboard submission until stability passes.** Protect the 10-submission budget.
+
+### Baseline diagnostic readings (v1.1, full 500K — recorded 2026-06-28)
+| metric | value | read |
+|---|---|---|
+| subsample top-20% stability (Jaccard) | 0.998 | tail is not a sampling artifact ✅ |
+| weight-perturbation stability | 0.836 | robust to ±15% weight jitter ✅ |
+| score concentration (Gini) | 0.123 | **flat** — all-percentile terms compress the dollar tail that real profit has ⚠ |
+| top-20% capture: spend / f1 / f17 | 0.42 / 0.26 / 0.30 | lifts 2.1× / 1.3× / 1.5× — tilted to revenue, but modest |
+| overlap vs naive spend-only top-20% | 0.341 | only ⅓ of our top-20% are top spenders — **flag for submission-#1 calibration** |
+
+_Not a tuning trigger (numeric calibration still frozen until the submission-#1 signal, see above). These
+are watch-items: the low spend overlap + flat Gini are the first things to interrogate once we have real
+leaderboard feedback — interchange is the dominant lever for a charge-heavy premium card, so a 0.34 spend
+overlap may mean balance/borrow terms are over-weighted relative to spend._
