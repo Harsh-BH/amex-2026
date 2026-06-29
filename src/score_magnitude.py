@@ -98,6 +98,30 @@ def dollar_profit_catmargin_f4(df: pd.DataFrame) -> pd.Series:
     return pd.Series(dollar_profit_catmargin(df).values - CPP_CONTINGENT * f.f4.values, index=df.index)
 
 
+def dollar_profit_catmargin_v7(df: pd.DataFrame) -> pd.Series:
+    """v7: v5 category-margin but FIX the no-breakdown cohort. f5 is uncorrelated with real spend
+    (Spearman 0.009) so ranking the ~23% no-breakdown cohort by f5 is noise. Instead rank them by f4
+    (points balance — the best available spend proxy, Spearman 0.28) where present, else give 0 spend
+    (no signal → they rank by interest/cost only). Concentrates the top-20% on members with confirmed
+    (breakdown) or proxy-evidenced (f4) spend, instead of randomly seeding it from f5."""
+    f = df.fillna(0.0)
+    has_bd = df[SPEND_CATS].notna().any(axis=1).values
+    catsum = df[SPEND_CATS].sum(axis=1, min_count=1).values
+    catrev = sum(CAT_MARGIN[c] * f[c].values for c in SPEND_CATS)
+    blend = np.nansum(catrev[has_bd]) / np.nansum(catsum[has_bd])     # breakdown avg net margin
+    nb = ~has_bd
+    nb_f4 = nb & df.f4.notna().values
+    nb_spend = np.zeros(len(df))
+    if nb_f4.any():
+        ref = np.sort(catsum[has_bd])
+        f4r = pd.Series(f.f4.values[nb_f4]).rank(pct=True).to_numpy()
+        nb_spend[nb_f4] = np.quantile(ref, f4r)                       # f4 percentile -> breakdown spend $
+    rev = np.where(has_bd, catrev, blend * nb_spend)
+    benefits = f.f14.values + f.f15.values + f.f16.values + LOUNGE_COST * f.f13.values
+    exp_loss = LGD * f.f11.values * f.f1.values
+    return pd.Series(rev + R_INTEREST * f.f1.values - benefits - exp_loss, index=df.index)
+
+
 def _self_check():
     """A high-spend, low-risk, low-redemption member must outrank a low-spend, high-reward,
     high-risk one; scoring is deterministic; no NaNs."""
@@ -125,7 +149,8 @@ def main():
     np.random.seed(SEED)
     df = PremierEDA().df
     for name, fn in [("scores_v3", dollar_profit), ("scores_v4", dollar_spend),
-                     ("scores_v5", dollar_profit_catmargin), ("scores_v6", dollar_profit_catmargin_f4)]:
+                     ("scores_v5", dollar_profit_catmargin), ("scores_v6", dollar_profit_catmargin_f4),
+                     ("scores_v7", dollar_profit_catmargin_v7)]:
         s = fn(df)
         assert s.notna().all(), f"{name} has NaNs"
         out = pd.DataFrame({"id": df["id"], "score": s}).sort_values("id")
