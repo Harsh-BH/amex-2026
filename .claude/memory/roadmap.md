@@ -16,7 +16,7 @@ _The plan. Update status as stages complete. Reflects the R1 lifecycle; R2/R3 sk
 | 6 | Weight calibration | `10-weight-calibration` | 🟡 internal | v1.1: `borrow_int` hedged 0.80→0.40 (sensitivity `src/calibrate.py`); no knife-edge weights; weight table+sensitivity in [[framework-design]]. **LB-informed tuning deferred to post-submission-1.** |
 | 7 | Score + validate | `11-evaluation` | ✅ done | 500K scored (`data/scores_v1.csv`); top-20% stability 0.998 subsample / 0.865 weight-perturb (`src/validation.py`). |
 | 8 | First submission | `13-submission-generation` | ✅ done | sub-v1 uploaded 2026-06-29 → **public LB 0.449** (top-20% overlap; ≈2.25× random). Budget 1/10. |
-| 9 | Iterate (≤10) | `12-leaderboard-improvement` | 🟡 active | Baseline 0.449. Next: calibrate spend vs balance/borrow weighting (controlled, business-justified; guard public-70% overfit). |
+| 9 | Iterate (≤10) | `12-leaderboard-improvement` | 🟡 active | sub-v1 0.449 → sub-v2 (zero borrow_int) **0.465** (+0.016). Budget 2/10. Next: tighten f4 rewards-liability (#3); guard public-70% overfit. |
 | 10 | Document & finalize | `14-documentation` / `15-final-review` | ⬜ | Framework sheet complete; final-delivery checklist green. |
 
 ## Beyond R1
