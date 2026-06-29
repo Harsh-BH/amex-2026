@@ -87,6 +87,17 @@ def dollar_profit_catmargin(df: pd.DataFrame) -> pd.Series:
     return pd.Series(catrev + R_INTEREST * f.f1.values - benefits - exp_loss, index=df.index)
 
 
+CPP_CONTINGENT = CPP * 0.9 * 0.2   # cost/pt × redemption prob × annual expensing fraction
+
+
+def dollar_profit_catmargin_f4(df: pd.DataFrame) -> pd.Series:
+    """v6: v5 category-margin MINUS a small contingent liability on the outstanding points balance f4
+    (annualized expected redemption cost). Re-adds a real cost the period-flow versions dropped —
+    members sitting on large unredeemed balances carry a future cost."""
+    f = df.fillna(0.0)
+    return pd.Series(dollar_profit_catmargin(df).values - CPP_CONTINGENT * f.f4.values, index=df.index)
+
+
 def _self_check():
     """A high-spend, low-risk, low-redemption member must outrank a low-spend, high-reward,
     high-risk one; scoring is deterministic; no NaNs."""
@@ -113,7 +124,8 @@ def main():
     _self_check()
     np.random.seed(SEED)
     df = PremierEDA().df
-    for name, fn in [("scores_v3", dollar_profit), ("scores_v4", dollar_spend), ("scores_v5", dollar_profit_catmargin)]:
+    for name, fn in [("scores_v3", dollar_profit), ("scores_v4", dollar_spend),
+                     ("scores_v5", dollar_profit_catmargin), ("scores_v6", dollar_profit_catmargin_f4)]:
         s = fn(df)
         assert s.notna().all(), f"{name} has NaNs"
         out = pd.DataFrame({"id": df["id"], "score": s}).sort_values("id")
