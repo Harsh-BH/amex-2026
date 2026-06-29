@@ -4,7 +4,8 @@ _Every scoring attempt. **Submissions are capped at 10** — guard them. Log BEF
 (hypothesis) and AFTER (result). Use `.claude/templates/experiment.md` for full records; this
 table is the index. Newest at top._
 
-## Submission budget: 2 / 10 used (primary) — secondary account: 5 used (v3 → 0.614, v4 → 0.609, v5 → 0.733, v6 → 0.675, v7 → 0.768)
+## Submission budget: 2 / 10 used (primary) — secondary account: 6 used (v3 → 0.614, v4 → 0.609, v5 → 0.733, v6 → 0.675, v7 → 0.768, v8 → 0.681)
+<!-- BEST = v7 (0.768). Last TWO tuning attempts (v6 +f4, v8 margin-recalib) both HURT → at the ceiling of this approach; lock v7 on primary. -->`
 
 | # | Date | Hypothesis (1 line) | Key change | Public LB | Private LB | Keep? |
 |---|------|---------------------|-----------|-----------|-----------|-------|
@@ -15,7 +16,7 @@ table is the index. Newest at top._
 | 5 | 2026-06-29 | Category-MARGIN-weighted spend (airline/lodging net-negative) on the magnitude base | v2.1 → `submission_v5_category-margin.xlsx` (secondary acct) | **0.733** (+0.119!!) | (hidden) | ✅✅ category margins WIN big |
 | 6 | 2026-06-29 | +f4 contingent points-balance liability on the category-margin base | `submission_v6_catmargin-f4.xlsx` (secondary acct) | **0.675** (−0.058 vs v5) | (hidden) | ✗ f4 HURTS — reverted |
 | 7 | 2026-06-29 | Fix no-breakdown cohort: f5 is noise (r=0.009) → rank 23% by f4-proxy, demote no-signal | v2.2 → `submission_v7_cohort-fix.xlsx` (secondary acct) | **0.768** (+0.035 vs v5) | (hidden) | ✅✅ cohort-fix WINS — NEW BEST |
-| 8 | 2026-06-29 | Recalibrate margins on v7: high-earn hypothesis — dining ALSO net-negative (4-5x), only "other" clearly + | v2.3 → `submission_v8_margins-recalib.xlsx` (secondary acct) | _pending_ | (hidden) | reshuffles 31% of v7; 53% neg |
+| 8 | 2026-06-29 | Recalibrate margins on v7: high-earn hypothesis — dining ALSO net-negative (4-5x), only "other" clearly + | v2.3 → `submission_v8_margins-recalib.xlsx` (secondary acct) | **0.681** (−0.087 vs v7) | (hidden) | ✗ dining is net-POSITIVE; aggressive margins HURT — v7 margins were right |
 
 ## Running notes
 - Always record the **config/seed** so a result is reproducible (`.claude/standards/reproducibility.md`).
