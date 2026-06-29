@@ -93,6 +93,15 @@ economically-justified lever per submission; do not grid-search a proxy or chase
 
 Effect vs v1.1: top-20% **churn 23.1%** (Spearman 0.913); segment mix lender 43.1%→**20.5%** / revolver 36.8%→**48.8%** / transactor 20.1%→**30.8%** (composition now tracks realized profit, not line ownership). Stability HELD: subsample 0.998, weight-perturb 0.825. Revenue capture: spend 2.1× / carried-balance 1.4× / lend-line **0.6×**. → `data/scores_v2.csv`, `submissions/submission_v2_zero-borrow.xlsx`. **RESULT: public-LB 0.465 (+0.016 vs v1's 0.449) — the lend-line fix improved top-20% overlap; direction confirmed.** NOTE: score-Gini is ill-posed for a signed index (don't cite it); use revenue-capture lift.
 
+## Gap diagnosis & magnitude experiment (stage 9b — 2026-06-29)
+Leaders sit at public-LB **~0.89–0.90**; our best is **0.465**. Both our submissions are PERCENTILE-based and clustered ~0.46 (Jaccard 0.62) → the percentile framework appears **ceilinged near 0.46**; the 0.44 gap is **structural, not a weights problem** (a one-lever tweak gave only +0.016).
+
+**Hypothesis (framework v2.0):** rank by **dollar-magnitude** revenue−cost (NOT percentile), so natural dollar magnitudes weight the features like a real P&L. Impl `src/score_magnitude.py`; writeup `framework-doc-v3-magnitude.md`. dollar-profit = 0.022·spend + 0.08·f1 − 0.01·f21 − benefits − 0.5·f11·f1.
+
+**framework-critic red-team (accepted, key points):** (1) for a SET-OVERLAP metric, magnitude-vs-rank matters ONLY insofar as it re-orders the cutoff — "our top-20% holds X% of margin" is **circular**, struck from the writeup; (2) FATAL `f5`-cap cohort collapse (23%→1.1% of top-20%) — FIXED by quantile-mapping `f5` onto the breakdown spend distribution (→24.8%, fair); (3) score was `f7`-dominated (0.90 var-share; the fix cut f7-overlap 0.75→0.46); (4) cost-per-point is a free parameter that flips ~20–40% of negative-margin signs (can't calibrate without a label).
+
+**Status:** v3 (dollar-profit) + v4 (dollar-spend) built, cohort-fixed, validated, re-verified. This is an **UNPROVEN structural bet** — no label-free proof it beats percentile; it could score <0.465. Only the LB adjudicates. If it wins → calibrate rates + merge to main; if not → percentile v1.2 (0.465) remains the validated fallback on main.
+
 ## v1 simplifications — named ceilings, fixable later
 1. **Risk shaves the whole score** → a rare risky-but-unprofitable member is nudged up slightly;
    irrelevant to the top-20% we're graded on. *Upgrade:* apply risk to credit-exposed revenue only.

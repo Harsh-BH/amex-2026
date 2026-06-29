@@ -12,15 +12,18 @@ Run:  .venv/bin/python src/build_submission.py
 from __future__ import annotations
 import csv
 import re
+import sys
 from pathlib import Path
 import openpyxl
 from openpyxl.styles import Alignment, Font
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = next((ROOT / "docs").glob("*submission*template*.xlsx"))
-SCORES = ROOT / "data" / "scores_v2.csv"
-WRITEUP = ROOT / ".claude" / "templates" / "framework-doc.md"
-OUT = ROOT / "submissions" / "submission_v2_zero-borrow.xlsx"
+# CLI overrides:  python build_submission.py [scores.csv] [writeup.md] [out.xlsx]
+_a = sys.argv[1:]
+SCORES = ROOT / "data" / (_a[0] if len(_a) > 0 else "scores_v2.csv")
+WRITEUP = ROOT / ".claude" / "templates" / (_a[1] if len(_a) > 1 else "framework-doc.md")
+OUT = ROOT / "submissions" / (_a[2] if len(_a) > 2 else "submission_v2_zero-borrow.xlsx")
 N_ROWS = 500_000
 
 
