@@ -18,9 +18,9 @@ from openpyxl.styles import Alignment, Font
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = next((ROOT / "docs").glob("*submission*template*.xlsx"))
-SCORES = ROOT / "data" / "scores_v1.csv"
+SCORES = ROOT / "data" / "scores_v2.csv"
 WRITEUP = ROOT / ".claude" / "templates" / "framework-doc.md"
-OUT = ROOT / "submissions" / "submission_v1_baseline.xlsx"
+OUT = ROOT / "submissions" / "submission_v2_zero-borrow.xlsx"
 N_ROWS = 500_000
 
 

@@ -111,7 +111,7 @@ _Research phase CLOSED after round 3 (diminishing returns). Full prose: report r
 
 **Rewards cost — set the `f4` discount precisely:**
 - `f21` (redeemed) = realized cost, weight ≈ 1. `f4` (balance) = **contingent** liability: cost ≈ `f4 × p_redeem × cost-per-point` (Gault et al. 2012, CAS; IATA IFRS-15).
-- **~17–18% breakage benchmark → ~80–90% redemption-discount band** (sensitivity band, not point estimate).
+- **~17–18% breakage benchmark → ~80–90% redemption-discount band** (sensitivity band, not point estimate). **⚠ SUPERSEDED for Amex (stage-9): Amex MR redemption ≈96% (breakage ~3–4%) → `f4` is a near-FULL liability, NOT 80–90% discounted. See Stage-9 section below.**
 - **Per-member modulation:** use `f21/f4` (or `f21/(f4+f21)`) redemption ratio + engagement (`f12`,`f22`/`f23`) — dormant high-balance accumulators break (cheaper); engaged redeemers cost near-full. Concave/threshold transform on `f4` (Hssaine 2025). Revenue-contingency: scale `f4` penalty down where spend is high (Chun et al. 2020).
 - `f13`–`f16` = **utilization-driven costs** (observed magnitude already reflects usage; low utilization = margin tailwind).
 
@@ -124,4 +124,26 @@ _Research phase CLOSED after round 3 (diminishing returns). Full prose: report r
 
 **Net-new citations (round 3):** Twala MIA (2008) · Mazziotta-Pareto AMPI (2018) · Saisana (2005)+OECD (2008) · Glady-Croux (2009) · Gault CAS (2012)+IATA 17–18% breakage · Parisi SML (2014) · So-Thomas-Seow-Mues (2014).
 
-**Soft numerals to re-source before quoting:** AMPI [70,130] goalpost; Chun "Delta $412M→$2.4B" (drop); IATA per-airline 2024 liability dollars (the 17–18% breakage is firm).
+**Soft numerals to re-source before quoting:** AMPI [70,130] goalpost; Chun "Delta $412M→$2.4B" (drop); IATA per-airline 2024 liability dollars (the 17–18% breakage is a GENERIC prior — Amex-specific is ~3–4%, see Stage-9).
+
+## Stage-9 dollar-economics calibration (2026-06-29, post-submission-1: LB 0.449)
+_Two parallel research threads after the baseline: internal per-member dollar decomposition (data-explorer, 500K) + external Amex unit-economics (cited: 10-Ks, Fed, CFPB). They CONVERGE. Goal: replace arbitrary weight priors with evidence._
+
+**Per-dollar economics (external, cited):** net spend margin ≈ **+0.3%/$** (≈2.5% Amex discount − ~2% rewards − ~0.5% benefit credits — the transaction function nets ≈0, per Fed); net interest ≈ **+6%/$ carried** (11.9% Amex net yield − 2.0% write-off − opex). Per-dollar ratio spend:balance:lend ≈ **1 : 17 : 17**. BUT members spend ≫ they carry → MEMBER-level mix ≈ Amex's actual reported **55% discount / 22% interest / 12% fees**.
+
+**Internal data decomposition (500K, scale-caveated — features masked):**
+- `balance_int` (`f1`) implied weight ≈ **0.39, STABLE across all utilization scenarios** (`f1` is real outstanding balance) → current **0.80 is ~2× too high**.
+- `borrow_int` (`f17`) implied weight **0.53 (20% util) → 2.6 (full line)** — entirely utilization-dependent, and `f17` = line CAPACITY, utilization UNOBSERVABLE (A11). At full-line the dollar-margin top-20% becomes **86% lenders** (implausible "who has a line" ranking). Cross-check: matching Amex's 55/22 mix needs interest LESS dominant than even 20%-util → **do NOT raise borrow_int**.
+- `ic_only` == `spend_only` (top-20% Jaccard **1.0**): interchange ranking IS spend ranking — no separate interchange term needed.
+- current score ~ spend Spearman **0.63** > current score ~ dollar-margin **0.62** (close); score-vs-margin top-20% Jaccard 0.31 — but "margin" is biased by the bad full-util assumption, so it is NOT ground truth.
+
+**Calibration decisions (3-SOURCE reconciliation: internal data + external econ + Gemini deep-research, all cited):**
+0. **The 3rd source CORRECTED a prior call.** Gemini (Amex 10-K + network rate cards) put the per-DOLLAR ratio at spend : carried-balance : UNUSED-lend-line ≈ **1.0 : 6.0 : −0.3**. This contradicts the internal agent's "lower balance_int to 0.39" — that number was contaminated by the biased full-utilization `f17` dollar-margin. **NET: do NOT lower balance_int.** (This is why we researched before submitting — we nearly made a wrong change.)
+1. **HOLD `balance_int` (~0.80 R / 0.40 L).** `f1` carried balance is the HIGHEST per-$ margin lever (~9.6%/$ = 12% yield − 2.4% write-off). Cutting it would wrongly rank big transactors above genuinely profitable revolvers.
+2. **★ Zero (or negative) `borrow_int` — `f17` line SIZE is a capital COST, not revenue (CONVERGENT, all 3 sources).** An unused line earns $0 but incurs CECL provisioning + Basel III RWA capital drag (≈ −0.3 to −0.5%/$). The stage-6 hedge (0.80→0.40) was right in direction but unfinished. **v1.2 candidate: `borrow_int` 0.40 → 0.0** (drop the positive `f17` term); optional refinement = small negative weight on unused capacity (`f17 − f1`). Measure churn (`borrow_int` drop-churn 0.38 in calibrate.py).
+3. **Category margins ASYMMETRIC; airline+lodging are NET-NEGATIVE** (Gemini, cited MDR vs 5x reward cost): per-$ net Dining `f10` +1.85% > Other `f7` +1.30% > Lodging `f9` −1.50% > Airline `f6` −2.00%. Summing `f5`/`f6`–`f10` mixes profit with loss. BUT internal test: margin-weighting re-ranks <7% of top-20% (Spearman 0.998) — because `f7` "other" dominates magnitude AND the profitable tail already under-indexes air+lodge (−2.6pp). → LOW ranking impact, HIGH writeup-defensibility; light down-weight/zero on `f6`,`f9` as a later lever.
+4. **Unprofitable "rewards maximizer" archetype** (Gemini): ~15–20% of premium portfolios run net-negative. Flags: high `f6/f5` (airline isolation), high `f14`/`f15`/`f16` (credit exhaustion), `f1`=0 (no interest), high `f13` lounge + low spend. → cost-side interaction term + strong writeup material.
+5. **Percentile ranking CONFIRMED correct (all 3) — and `log1p`-before-ranking is a NO-OP** (monotone ⇒ identical percentiles; my earlier log1p idea was wrong — DROP it). Gemini: dollar/z-scaling destroys 80–99th-pctile resolution; percentile is mathematically dominant for top-quintile capture.
+6. **f4 breakage**: Amex URR ~85–90% (Gemini) / ~96% (prior) — either way LOW; `f4` is a near-full liability → tighten its discount (separate cost lever, A12).
+
+**Sources:** Amex FY2024 10-K (discount rev 53.4%/$35.2B, NII 23.5%/$15.5B, card fees 12.8%/$8.4B; net interest yield 11.7–12.2%; write-off 2.0–2.4%); network rate cards (MDR retail 1.6–2.4%, T&E 2.25–3.0%, +0.15% assessment, +0.30% CNP); Fed FEDS 2022 (txn function ≈0 on rewards cards); CFPB (rewards ~1.6¢/$, APR margin 14.3%); CPP $0.008–0.012, URR 85–96%. Gemini report: `~/Downloads/Amex Premium Cardmember Profitability.pdf` (27 cited sources). Internal: `src/score.py` decomposition.

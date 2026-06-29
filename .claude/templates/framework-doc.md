@@ -9,7 +9,7 @@ We score profitability with 13 of the 23 features, each mapped to a real line of
 Revenue side:
 - f5 Total Spend, f6 Airlines, f7 Other (refunds appear as negatives), f8 Entertainment, f9 Lodging, f10 Dining — spend drives interchange/discount revenue, Amex's dominant lever.
 - f1 Average Revolve Balance — net interest income on carried balances.
-- f17 Total Lend Line Amount — interest on the Pay-Over-Time / lending component; also flags the "lender" segment.
+- f17 Total Lend Line Amount — used ONLY to flag the "lender" segment. Its line SIZE is deliberately NOT a revenue term (v1.2): an unused credit line earns nothing yet carries loss-provisioning and regulatory-capital costs, so lending profit is captured by the carried balance f1, not the granted line.
 - f19 Supplementary Accounts, f20 Active Charge Cards — relationship depth: more cards mean more spend capacity and supplementary fees.
 
 Cost side:
@@ -30,9 +30,9 @@ The score is a segmented revenue-minus-cost contribution margin, haircut by defa
     profit_score = ( Revenue - Cost ) x ( 1 - Risk )
 
     Revenue = w_spend  . SPEND
-            + w_bal    . rank(f1)
-            + w_borrow . rank(f17)
+            + w_bal    . rank(f1)            (carried-balance interest — the lending profit driver)
             + w_depth  . rank(f19 + f20)
+            [ a lend-line-size term w_borrow . rank(f17) exists in the structure but is ZEROED in v1.2 ]
 
     Cost    = w_rew    . REWARDS
             + w_perks  . rank(f13 + f14 + f15 + f16)
@@ -51,7 +51,7 @@ The score is a segmented revenue-minus-cost contribution margin, haircut by defa
 The continuous profit_score is written directly as the Prediction for each id — higher means more profitable to the issuer. All 500,000 members are scored by one equation; the segment only swaps which weight column is used, so scores stay globally comparable and rank-order into a single list. The graded set is the top 20% (100,000 members) of that ranking. A missing input contributes 0 (that revenue or cost simply does not exist for the member — e.g. a charge-only member has no lending interest). Scoring is deterministic (fixed seed 42) and fully reproducible from src/score.py.
 
 ## Variable Selection Logic
-Every term had to map to a revenue or cost the issuer actually books (business-context.md). Spend earns interchange and is the dominant lever, so it carries the largest revenue weight. Carried balance (f1) and the lend line (f17) earn net interest, but only for the segments that revolve or borrow — hence segment-specific weights. Cards (f19, f20) proxy supplementary fees and spend capacity. On the cost side, redeemed points (f21) are a booked cost and the points balance (f4) is a contingent liability; benefit credits (f13–f16) are direct cash outflows; cancellation calls (f2) proxy servicing and churn cost. Risk (f11, amplified by collection calls f3) captures expected credit loss. We excluded id (leakage), the constant annual fee (no differentiation), the redundant f18, and the engagement features (f12/f22/f23) because activity is not profit.
+Every term had to map to a revenue or cost the issuer actually books (business-context.md). Spend earns interchange and is the dominant lever, so it carries the largest revenue weight. Carried balance (f1) earns net interest for the segments that revolve, weighted accordingly. The lend line (f17) is used only to identify the lender segment — its size is a granted credit limit (a capital cost until drawn), not booked revenue, so it carries no positive weight (v1.2). Cards (f19, f20) proxy supplementary fees and spend capacity. On the cost side, redeemed points (f21) are a booked cost and the points balance (f4) is a contingent liability; benefit credits (f13–f16) are direct cash outflows; cancellation calls (f2) proxy servicing and churn cost. Risk (f11, amplified by collection calls f3) captures expected credit loss. We excluded id (leakage), the constant annual fee (no differentiation), the redundant f18, and the engagement features (f12/f22/f23) because activity is not profit.
 
 ## Coefficient/Weight Derivation
 No profitability label exists, so weights are business priors — not fit to a target — and each is justified by where a segment earns money. Weights are selected per segment (Transactor / Revolver / Lender):
@@ -59,13 +59,13 @@ No profitability label exists, so weights are business priors — not fit to a t
     term             T      R      L
     spending        1.00   0.70   0.70
     balance_int     0.00   0.80   0.40
-    borrow_int      0.00   0.00   0.40
+    borrow_int      0.00   0.00   0.00   (zeroed in v1.2 — see below)
     depth           0.20   0.20   0.20
     rewards_cost    0.50   0.40   0.40
     perks_cost      0.30   0.30   0.30
     servicing_cost  0.15   0.15   0.15
 
-Risk uses 0.8.rank(f11) + 0.2.f3 capped at 0.9; the rewards liability weight is 0.5. Transactors are tilted to spend (no interest terms); revolvers add carried-balance interest; lenders add lending interest. borrow_int was hedged from 0.80 to 0.40 because f17 is lend-line SIZE (capacity), not interest earned — at 0.80 it alone drove 62% of the top-20% (sensitivity analysis in src/calibrate.py). After the hedge no weight is knife-edge: a +/-25% nudge to any single weight changes at most 22% of the top-20%. Leaderboard-informed numeric calibration is deferred until the first submission returns a public signal — grid-searching against a proxy would fit nothing real.
+Risk uses 0.8.rank(f11) + 0.2.f3 capped at 0.9; the rewards liability weight is 0.5. Transactors are tilted to spend (no interest terms); revolvers add carried-balance interest; lenders earn from spend and carried balance. The lend-line-size term borrow_int was ZEROED in v1.2 after a three-source economic review (an internal per-member dollar decomposition of the 500K, external Amex unit-economics from 10-K/regulatory filings, and an independent deep-research pass all converged): an unused credit line generates no revenue and incurs CECL loss provisioning plus Basel III capital, so weighting line SIZE positively was an econometric error. It was hedged 0.80->0.40 at stage 6 (at 0.80 it alone drove 62% of the top-20%, per src/calibrate.py) and zeroed at stage 9 — lending profitability is now carried entirely by the high-margin carried balance f1 (~9.6% net annual yield per dollar). The remaining weights are business priors; leaderboard-informed calibration continues against public-LB feedback (baseline submission scored 0.449 top-20% overlap), explicitly guarded against over-fitting the public 70%.
 
 ## Feature Transformations
 - Rank-normalization: every term input is converted to a [0,1] percentile before weighting. Raw scales span about six orders of magnitude (f4 reaches ~698K; f11 is ~0.03–0.33), so a raw weighted sum would let one feature dominate. Percentile ranking makes terms additive, is robust to heavy tails, and preserves ordering inside the top tail (we avoided z-scoring and logging, which can either be outlier-dominated or flatten the very tail we are graded on).
@@ -74,7 +74,7 @@ Risk uses 0.8.rank(f11) + 0.2.f3 capped at 0.9; the rewards liability weight is 
 - Rewards: the contingent liability f4 is discounted by breakage via redemption_intensity = f21/(f4+f21) — members who rarely redeem carry a cheaper liability — and the f4 component is down-weighted (0.5) relative to realized redemptions f21.
 
 ## Business Logic
-The score is a realized contribution-margin proxy: the revenue a member generates minus the cost to serve them, then haircut by default risk. A high score means high profitable spend and interest with low reward and benefit burn at low risk. Crucially, revenue is not size: a heavy spender who burns an equivalent amount of rewards nets little because cost is subtracted, and a low spender with heavy benefit usage and a high risk score scores negative. This mirrors a sensible issuer P&L — and because the competition's hidden ground truth is almost certainly itself a revenue-minus-cost computation on these same features, the closer our economics track a real P&L, the higher our top-20% overlap. The product is a charge card (interchange-led) with a lending component for the ~41.5% of members who hold a lend line.
+The score is a realized contribution-margin proxy: the revenue a member generates minus the cost to serve them, then haircut by default risk. A high score means high profitable spend and interest with low reward and benefit burn at low risk. Crucially, revenue is not size: a heavy spender who burns an equivalent amount of rewards nets little because cost is subtracted, and a low spender with heavy benefit usage and a high risk score scores negative. This mirrors a sensible issuer P&L — and because the competition's hidden ground truth is almost certainly itself a revenue-minus-cost computation on these same features, the closer our economics track a real P&L, the higher our top-20% overlap. The product is a charge card (interchange-led) with a lending component for the ~41.5% who hold a lend line — but lending profit is the balance they actually revolve (f1), not the size of the line they are granted, which is a cost until drawn.
 
 ## Assumptions
 - A1 (evidence-based): f5 is saturated/capped for the majority, so spend is ranked from the category sum f6–f10.
@@ -87,15 +87,16 @@ The score is a realized contribution-margin proxy: the revenue a member generate
 
 ## Validation Approach
 With no label, we cannot measure overlap directly, so we validate that our top-20% is stable and business-plausible (src/validation.py, full 500K):
-- Top-20% stability: 0.998 mean Jaccard under 70% subsample resampling, and 0.836 under +/-15% weight perturbation — the profitable tail is not an artifact of which rows we see or of the exact (un-calibrated) weights.
-- Revenue capture (whale-curve / top-quintile lift, the closest computable proxy for the graded metric): our top-20% holds 42% of total spend (2.1x lift), 30% of lend-line (1.5x), and 26% of carried balance (1.3x) — concentrated on revenue, as profit should be.
-- Spend-only check: overlap of our top-20% with a naive rank-by-spend top-20% is 0.34 — confirming the framework is not merely a spend proxy; cost and risk genuinely reshuffle the tail.
+- Top-20% stability: 0.998 mean Jaccard under 70% subsample resampling, and 0.825 under +/-15% weight perturbation — the profitable tail is not an artifact of which rows we see or of the exact weights.
+- Revenue capture (whale-curve / top-quintile lift, the closest computable proxy for the graded metric): our top-20% holds 42% of total spend (2.1x lift) and 28% of carried balance (1.4x), but only 12% of lend-line capacity (0.6x) — confirming the score concentrates on realized profit (spend + revolving balance), not on granted credit-line size.
+- Spend-only check: overlap of our top-20% with a naive rank-by-spend top-20% is 0.34 — the framework is not merely a spend proxy; cost, risk, and carried balance genuinely reshuffle the tail.
+- Segment mix of the top-20%: revolver 49% / transactor 31% / lender 20.5% — profit follows revolving interest and high spend, not lend-line ownership.
 - Sensitivity: no single weight is knife-edge (src/calibrate.py).
-- Overfit guard: weights are business priors and numeric leaderboard tuning is deferred to post-submission-1; because a hidden 30% split decides final placement, we will not chase the public 70%.
+- Overfit guard: weights stay business-grounded and calibration is driven by public-LB feedback (baseline 0.449); because a hidden 30% split decides final placement, we change one economically-justified lever at a time and never chase the public 70%.
 
 ## Additional Notes (Optional)
-- Score concentration is modest (Gini 0.12) — rank-normalizing every term compresses the dollar tail that real profit has; a candidate refinement once we have leaderboard signal.
+- Concentration is evidenced by revenue capture (top-20% holds 2.1x its share of spend), NOT by a Gini of the score: the score is a signed index (range ~[-0.69, 1.50]), so a Gini on it is ill-posed and we do not rely on it.
 - Risk currently shaves the whole score rather than only the credit-exposed revenue; the effect on the top-20% is negligible and the sharper form is a known upgrade.
 - The depth and servicing terms are the lowest-leverage levers and could be dropped for a simpler equation.
 - The framework is fully reproducible (fixed seed, pinned dependencies), runs in O(n) over 500K in seconds, uses no per-member tuning, never touches id, and is a transparent auditable equation — scalable and integrity-safe by construction.
-- Next planned iteration: leaderboard-informed calibration of the spend versus balance/borrow weighting, prompted by the 0.34 spend-overlap watch-item above.
+- Next planned iteration (post submission-2): a cost-side refinement — tightening the f4 rewards-liability discount, since Amex point breakage is low (outstanding points are a near-full future liability rather than a heavily-discounted contingent cost).

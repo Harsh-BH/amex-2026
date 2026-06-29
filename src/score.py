@@ -1,10 +1,10 @@
-"""Premier-card profitability score — framework v1.
+"""Premier-card profitability score — framework v1.2.
 
 score = (Revenue − Cost) × (1 − Risk), all term inputs rank-normalized to [0,1],
 one equation for all 500K with weights keyed by segment (transactor/revolver/lender).
 Spec: .claude/memory/framework-design.md. Uses only f1–f23 (never id).
 
-Run:  .venv/bin/python src/score.py     # self-checks, then scores 500K -> data/scores_v1.csv
+Run:  .venv/bin/python src/score.py     # self-checks, then scores 500K -> data/scores_v2.csv
 """
 from __future__ import annotations
 from pathlib import Path
@@ -13,14 +13,14 @@ import pandas as pd
 from eda import PremierEDA, SPEND_CATS
 
 SEED = 42
-OUT = Path(__file__).resolve().parent.parent / "data" / "scores_v1.csv"
+OUT = Path(__file__).resolve().parent.parent / "data" / "scores_v2.csv"
 
-# --- per-segment weights (v1 business priors; calibration = roadmap stage 6) ---
+# --- per-segment weights (v1 business priors; v1.2 = stage-9 research calibration) ---
 # value = (transactor, revolver, lender). Tilt to where each segment earns.
 WEIGHTS = {
     "spending":       (1.00, 0.70, 0.70),   # interchange ≈ spend volume
-    "balance_int":    (0.00, 0.80, 0.40),   # carried-balance interest
-    "borrow_int":     (0.00, 0.00, 0.40),   # lending-line interest (stage-6: halved 0.80->0.40 — f17 is line SIZE not interest earned; was driving 62% of top-20%)
+    "balance_int":    (0.00, 0.80, 0.40),   # carried-balance interest (f1 = the real lending profit driver, ~9.6%/$; held — see stage-9)
+    "borrow_int":     (0.00, 0.00, 0.00),   # ZEROED v1.2 (stage-9, 3-source convergent): f17 is line SIZE = a capital cost (CECL/Basel III), NOT revenue. Lending profit comes from carried balance f1, not the line. (stage-6 hedged 0.80->0.40; stage-9 finished the job ->0.)
     "depth":          (0.20, 0.20, 0.20),   # extra cards / supp fees
     "rewards_cost":   (0.50, 0.40, 0.40),   # redeemed + discounted liability
     "perks_cost":     (0.30, 0.30, 0.30),   # lounge/airline/cab/ent credits

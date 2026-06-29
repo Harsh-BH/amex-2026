@@ -66,7 +66,7 @@ Implemented `WEIGHTS` (transactor / revolver / lender), all term inputs in [0,1]
 |---|---|---|---|
 | spending | 1.00 | 0.70 | 0.70 |
 | balance_int | 0.00 | 0.80 | 0.40 |
-| borrow_int | 0.00 | 0.00 | **0.40** |
+| borrow_int | 0.00 | 0.00 | **0.00** (v1.2; was 0.40) |
 | depth | 0.20 | 0.20 | 0.20 |
 | rewards_cost | 0.50 | 0.40 | 0.40 |
 | perks_cost | 0.30 | 0.30 | 0.30 |
@@ -84,9 +84,14 @@ vs v1 (Spearman 0.957).
 · rewards_cost .44/.12 · borrow_int .38/.11 · perks .25/.07 · depth .17/.05 · servicing .14/.03. **No knife-edge
 term** (max ±25% churn .22). `depth`/`servicing` are near-negligible → candidates to drop for a simpler writeup.
 
-**LB-informed calibration is still PENDING** (0/10 submissions, no label) — numeric tuning waits for the
-submission-#1 signal; do not grid-search a proxy. Diagnostics: `src/compare.py` (baseline agreement),
+**LB-informed calibration is now ACTIVE** (1/10 submitted, baseline 0.449; v1.2 calibrated below) — one
+economically-justified lever per submission; do not grid-search a proxy or chase the public 70%. Diagnostics: `src/compare.py` (baseline agreement),
 `src/llm_judge.py` (OpenAI judge — indifferent vs naive spend on contested pairs; cross-check only).
+
+## v1.2 calibration (stage 9 — 2026-06-29, post-submission-1)
+**Baseline sub-v1 (v1.1 weights) scored public-LB 0.449** (top-20% overlap; ≈2.25× random). Stage-9 research — 3 converging sources (internal $-decomposition of 500K, external Amex unit-economics from 10-K/regulatory filings, independent deep-research pass) — **zeroed `borrow_int` 0.40 → 0.00**: `f17` is lend-line SIZE, a capital cost (CECL provisioning + Basel III RWA), not revenue; lending profit is the carried balance `f1` (~9.6% net/$ — the highest per-$ margin lever). Hard zero chosen over a negative-unused-capacity penalty (v1.2b) — the latter over-penalizes a 2nd-order cost (idle line ≈ −0.3 to −0.5%/$) and adds an uncalibratable parameter (`scratchpad/measure_v12b.py`).
+
+Effect vs v1.1: top-20% **churn 23.1%** (Spearman 0.913); segment mix lender 43.1%→**20.5%** / revolver 36.8%→**48.8%** / transactor 20.1%→**30.8%** (composition now tracks realized profit, not line ownership). Stability HELD: subsample 0.998, weight-perturb 0.825. Revenue capture: spend 2.1× / carried-balance 1.4× / lend-line **0.6×**. → `data/scores_v2.csv`, `submissions/submission_v2_zero-borrow.xlsx`. NOTE: score-Gini is ill-posed for a signed index (don't cite it); use revenue-capture lift.
 
 ## v1 simplifications — named ceilings, fixable later
 1. **Risk shaves the whole score** → a rare risky-but-unprofitable member is nudged up slightly;
