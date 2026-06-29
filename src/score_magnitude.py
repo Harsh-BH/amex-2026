@@ -64,6 +64,29 @@ def dollar_spend(df: pd.DataFrame) -> pd.Series:
     return spend_dollars(df)
 
 
+# Per-$ NET margins by spend category (interchange minus category-specific reward cost), cited
+# from the unit-economics research: airline/lodging are net-NEGATIVE (5x reward cost > discount),
+# dining/other/entertainment net-positive. These FOLD IN the spend-driven reward cost.
+CAT_MARGIN = {"f6": -0.020, "f7": 0.013, "f8": 0.010, "f9": -0.015, "f10": 0.0185}
+
+
+def dollar_profit_catmargin(df: pd.DataFrame) -> pd.Series:
+    """v5: dollar_profit but interchange is replaced by CATEGORY-MARGIN-weighted spend — each spend
+    category earns its own net margin (airline/lodging negative). Since spend dominates the ranking,
+    reshaping the spend signal is the highest-leverage lever. Category margins already net per-category
+    reward cost, so the flat f21 reward term is dropped. No-breakdown cohort: quantile-mapped spend ×
+    the breakdown cohort's realized average net margin (keeps the cohorts on consistent footing)."""
+    f = df.fillna(0.0)
+    has_bd = df[SPEND_CATS].notna().any(axis=1).values
+    catrev = sum(CAT_MARGIN[c] * f[c].values for c in SPEND_CATS)
+    sp = spend_dollars(df).values
+    blend = catrev[has_bd].sum() / sp[has_bd].sum() if sp[has_bd].sum() else 0.0  # breakdown avg margin
+    catrev = np.where(has_bd, catrev, blend * sp)
+    benefits = f.f14.values + f.f15.values + f.f16.values + LOUNGE_COST * f.f13.values
+    exp_loss = LGD * f.f11.values * f.f1.values
+    return pd.Series(catrev + R_INTEREST * f.f1.values - benefits - exp_loss, index=df.index)
+
+
 def _self_check():
     """A high-spend, low-risk, low-redemption member must outrank a low-spend, high-reward,
     high-risk one; scoring is deterministic; no NaNs."""
@@ -90,7 +113,7 @@ def main():
     _self_check()
     np.random.seed(SEED)
     df = PremierEDA().df
-    for name, fn in [("scores_v3", dollar_profit), ("scores_v4", dollar_spend)]:
+    for name, fn in [("scores_v3", dollar_profit), ("scores_v4", dollar_spend), ("scores_v5", dollar_profit_catmargin)]:
         s = fn(df)
         assert s.notna().all(), f"{name} has NaNs"
         out = pd.DataFrame({"id": df["id"], "score": s}).sort_values("id")
