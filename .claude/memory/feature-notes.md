@@ -36,6 +36,12 @@ Direction: (+) revenue/value · (−) cost/risk · (±) ambiguous. Update as EDA
 - **Engagement:** `f2`, `f12`, `f19`, `f22`, `f23`
 - **Profile / risk:** `f3`, `f11`, `f17`, `f18`, `f4`, `f21`
 
+## Card reward economics (product brief Page 8 — AUTHORITATIVE, not a guess)
+- **Reward multipliers: 5x points on flights/airline (`f6`) & prepaid hotels/lodging (`f9`); 1x on ALL other purchases (incl. `f7` other, `f8` entertainment, `f10` DINING).** 1 point ≈ 1–2¢ member value (issuer cost lower).
+- ⇒ **Only airline (`f6`) + lodging (`f9`) are reward-expensive → the only net-NEGATIVE spend categories.** `f7`/`f8`/`f10` are all 1x → mildly net-POSITIVE and ~EQUAL. **This CORRECTS A13 and v5/v7/v8: dining (`f10`) is NOT a bonus category** — v5/v7 weighted it as the single TOP-positive margin (+0.0185 > other's +0.013), which contradicts the 1x structure; it should ≈ `f7`/`f8`. (v10's triangulation made `f10` *negative* — also unsupported by the terms; likely a member-correlation artifact, not reward economics.)
+- **Lifestyle credits (annual $ = benefit COSTS):** cabs `f15` $150-250 (**"$15/mo + $20 Dec" → CONFIRMS `f15` is MONTHS; cost ≈ $15/mo, so the code adding raw `f15` understates it ~15×**); airline credit `f14` $150-250 (matches f14 max 200); digital-ent credit `f16` $180-280; + fitness/clothing/commerce credits (no f-code). Lounge `f13` (cardholder+2 guests). NB benefit costs barely move the top-20% (triangulation: small/unstable).
+- **No preset limit (charge card) + Plan It installments + lend line** ⇒ revolving balance `f1` interest is real revenue — supports v10's `f1` up-weight. Welcome bonus 80–150K pts; annual fee $500–750 constant (A7, not a differentiator).
+
 ## Structured missingness clusters (treat together)
 - `f6`–`f10` (115,698) · `f4`+`f21` (257,228) · `f13`–`f16` (13,716) · `f17`/`f18` (~60%) · `f23` (88%)
 
@@ -53,3 +59,10 @@ Direction: (+) revenue/value · (−) cost/risk · (±) ambiguous. Update as EDA
 - **⚠ Do NOT let CRITIC/entropy drive the framework weights.** There is no profitability label, so these measure statistical *dispersion/redundancy*, not P&L relevance — that's why `logins` and `email_open` (near-zero profit content) float to the top while `lend_line`/`rewards` sink. Using them as primary weights = the §17 failure mode (high score, no defensible business logic). Weights come from revenue−cost reasoning first; objective weights are a sanity cross-check only.
 - **Gini concentration:** `revolve_bal` **0.80** (most concentrated — few big revolvers), `lodge_spend`/`ent_spend`/`rewards_redeemed` 0.72–0.76, spend cats 0.62–0.76, `total_spend` only **0.55**, lend lines lowest **~0.40**. High-Gini revenue features separate the top-20% tail best (research §N).
 - **Spearman > Pearson** for spend cats (0.61–0.71) and lend pair (0.92) — monotonic structure is stronger than linear; use Spearman for collinearity decisions. `correlations()`/`plot_corr()` now default to Spearman.
+
+### EDA round 3 (gap diagnosis 2026-06-29 — why v7=0.768 vs leaders 0.90)
+- **No-breakdown cohort = the #1 ceiling.** 75,174 members (15% of pop) have neither spend breakdown nor `f4` → v7 ranks them by interest `f1` only (38% have `f1`=0 too → near-random). A linear imputation of category-sum spend from `f4`+`f21`+`f13–f16`+`f11` reaches **OOS Spearman 0.527 vs `f4`'s 0.282** ([[assumptions]] A15). `f5` confirmed useless (0.009).
+- **`f15` is MONTHS not dollars** (0–11). The benefits term adds it as dollars → cab cost understated ~15×. Fixing (×~$15/mo) reshuffles only ~3.3K top-20% members (Spearman 0.987 — modest). Rescale or drop.
+- **`f3`=1 contamination:** 6,662 collection-flagged members in v7's top-20% (mean spend $392, risk 0.171 = ~5–10×) — interest revenue beats `exp_loss` (A17).
+- **`f19`/`f20` NEGATIVELY correlated with spend** (`f19` Spearman −0.214 within breakdown) — do NOT use as a revenue multiplier (A18).
+- **Score ≈ rank by `f7`.** `f7` = 54% of score variance; in the breakdown top-20% `f7` is 114.8% of catrev (`f6`+`f9` negative margins dig a −$33M hole). Both catrev and interest (`0.08·f1`) differentiate the tail (std ≈2.4× higher inside top-20%); `exp_loss`/benefits barely move the cutoff. Cutoff is NOT knife-edge (1.7% straddle).
