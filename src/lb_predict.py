@@ -27,7 +27,8 @@ ROOT = Path(__file__).resolve().parent.parent
 TOP = 100_000
 # public-LB top-20% overlap of every uploaded submission (the calibration set)
 LB = {"v1": .449, "v2": .465, "v3": .614, "v4": .609, "v5": .733, "v6": .675, "v7": .768,
-      "v8": .681, "v9": .727, "v10": .805, "v11min": .823, "v15": .827, "v19": .859}
+      "v8": .681, "v9": .727, "v10": .805, "v11min": .823, "v15": .827, "v19": .859,
+      "v21": .851, "v22": .866}
 NOISE_FLOOR = 0.020   # a proxy gain below this is within calibration noise — not a confident win
 
 
