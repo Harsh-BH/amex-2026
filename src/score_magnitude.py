@@ -638,6 +638,39 @@ def dollar_profit_v25_dualengine_margin(df: pd.DataFrame) -> pd.Series:
     return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
 
 
+# v26 (2026-07-01, BOLD GAMBLE): MULTIPLICATIVE dual-engine. v24's additive dual-engine bonus won +0.014;
+# v26 makes the stronger economic claim — a revolver's SPEND is worth multiplicatively more, because the
+# issuer books interchange on the spend AND interest on the balance from ONE compounding relationship. So
+# the spend component is SCALED by (1 + λ·revolving_intensity) instead of getting an additive bonus.
+# revolving_intensity = 0 for transactors (f1=0) → their spend factor is exactly 1 → pure high-spend whales
+# are scored on spend alone (whale-safe by construction). λ=0.9 chosen by the gradient compass as the bold
+# level that still retains 99.0% of the consensus whales (past λ≈1 whale-demotion accelerates = the v6/v8
+# losing direction) while making a big ~9,300-member swing that lifts the top-20% to ~74% revolver. This is
+# a genuine LB gamble — the predictor is blind to the interaction form, and it bets the truth's top-20% is
+# markedly more dual-engine-heavy than v24 (targeted, unlike the flat blanket-lending v20). Downside bounded
+# (v24 0.880 banked, best-score-counts). Deterministic; never uses id.
+V26_MULT_LAM = 0.9
+
+
+def dollar_profit_v26_multiengine(df: pd.DataFrame) -> pd.Series:
+    """v26 (BOLD): multiplicative dual-engine — spend_component × (1 + λ·revolving_intensity) + additive f1 +
+    expected loss. Revolving-intensity is 0 for transactors, so pure high-spend members are scored on spend
+    alone (whale-safe). Deterministic; uses f1,f3,f6-f11 (never id)."""
+    f = df.fillna(0.0)
+    f1v = f["f1"].values
+    S = 0.738 * f["f7"].values / (f["f7"].values.std() + 1e-9)         # general spend, dollar basis
+    for k, wv in V22_RANK_W.items():                                    # specialty cats, rank basis
+        pct = pd.Series(f[k].values).rank(pct=True).values
+        S = S + wv * pct / (pct.std() + 1e-9)
+    S = S - S.min() + 0.1                                               # shift positive so the multiplier is meaningful
+    revint = np.where(f1v > 0, pd.Series(f1v).rank(pct=True).values, 0.0)   # revolving intensity, 0 for transactors
+    score = S * (1.0 + V26_MULT_LAM * revint)                           # dual-engine: spend worth more for revolvers
+    score = score + 0.738 * _z(f1v)                                     # additive lending (co-equal, validated)
+    score = score + RECOVERED_RISK_W * _z(-(f.f11.values * f1v))        # expected credit loss
+    s = pd.Series(score, index=df.index)
+    return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
+
+
 # === v16+ / 2026-06-30: NON-LINEAR forms — the reach toward the 0.91 leaders ============================
 # Context (decision-log 2026-06-30; A23): the LINEAR weighted-sum family caps ~0.81-0.85 (the re-fit with
 # v11min+v15 added STILL can't reproduce v15's 0.827 — implied 0.815, LOO 0.790 — and recovers NEGATIVE
@@ -922,7 +955,12 @@ def _self_check():
     assert fu.notna().all() and fu[0] == fu.max(), f"v25 whale not on top: {fu.round(2).tolist()}"
     assert dollar_profit_v25_dualengine_margin(d2)[0] < fu[0], "v25 must still evict the f3-flagged whale"
     assert dollar_profit_v25_dualengine_margin(demo).equals(fu), "v25 must be deterministic"
-    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21+v22+v23+v24+v25 ✓")
+    # v26 multiplicative dual-engine: clean, deterministic, whale on top, still evicts f3
+    me = dollar_profit_v26_multiengine(demo)
+    assert me.notna().all() and me[0] == me.max(), f"v26 whale not on top: {me.round(2).tolist()}"
+    assert dollar_profit_v26_multiengine(d2)[0] < me[0], "v26 must still evict the f3-flagged whale"
+    assert dollar_profit_v26_multiengine(demo).equals(me), "v26 must be deterministic"
+    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21+v22+v23+v24+v25+v26 ✓")
 
 
 def main():
@@ -945,7 +983,8 @@ def main():
                      ("scores_v22", dollar_profit_v22_hybrid),
                      ("scores_v23", dollar_profit_v23_hybrid_margin),
                      ("scores_v24", dollar_profit_v24_dualengine),
-                     ("scores_v25", dollar_profit_v25_dualengine_margin)]:
+                     ("scores_v25", dollar_profit_v25_dualengine_margin),
+                     ("scores_v26", dollar_profit_v26_multiengine)]:
         s = fn(df)
         assert s.notna().all(), f"{name} has NaNs"
         out = pd.DataFrame({"id": df["id"], "score": s}).sort_values("id")
