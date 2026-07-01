@@ -611,6 +611,33 @@ def dollar_profit_v24_dualengine(df: pd.DataFrame) -> pd.Series:
     return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
 
 
+# v25 (2026-07-01): STACK ALL THREE confirmed post-v19 levers on the winning spine — basis transform (v22,
+# LB 0.866) + dual-engine interaction (v24, LB 0.880) + precise category margin (the predictor-backed +0.018
+# lever). Keeps the dual-engine weight at its CONFIRMED-winning level (0.20, not pushed — avoids gambling the
+# interaction's peak the way additive lending peaked at co-equal in v20) and ADDS the independent margin
+# signal (travel's 5x-reward thin margin), which moves a different ~4,000 boundary members. Whale-safe (0.999
+# — dual-engine is 0 for transactors, margin credits everyday spend). Deterministic; never uses id.
+def dollar_profit_v25_dualengine_margin(df: pd.DataFrame) -> pd.Series:
+    """v25: v24 dual-engine (LB 0.880) PLUS the precise per-$ net-margin term. Stacks the three confirmed
+    levers (basis transform + dual-engine interaction + category margin) on the validated spine. Deterministic."""
+    f = df.fillna(0.0)
+    f1v = f["f1"].values
+    score = np.zeros(len(df))
+    for k, wv in V22_DOLLAR_W.items():                                 # f7, f1 on the dollar/std basis
+        score += wv * f[k].values / (f[k].values.std() + 1e-9)
+    for k, wv in V22_RANK_W.items():                                   # f6/f8/f9/f10 rank-normalized
+        pct = pd.Series(f[k].values).rank(pct=True).values
+        score += wv * pct / (pct.std() + 1e-9)
+    score += RECOVERED_RISK_W * _z(-(f.f11.values * f1v))              # expected credit loss
+    catsum = f[SPEND_CATS].sum(axis=1).values
+    spend_r = pd.Series(catsum).rank(pct=True).values
+    revint = np.where(f1v > 0, pd.Series(f1v).rank(pct=True).values, 0.0)
+    score += V24_DUAL_W * _z(spend_r * revint)                         # dual-engine interaction (confirmed λ=0.20)
+    score += V23_MARGIN_W * _z(sum(m * f[k].values for k, m in V23_MARGIN.items()))   # precise per-$ margin
+    s = pd.Series(score, index=df.index)
+    return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
+
+
 # === v16+ / 2026-06-30: NON-LINEAR forms — the reach toward the 0.91 leaders ============================
 # Context (decision-log 2026-06-30; A23): the LINEAR weighted-sum family caps ~0.81-0.85 (the re-fit with
 # v11min+v15 added STILL can't reproduce v15's 0.827 — implied 0.815, LOO 0.790 — and recovers NEGATIVE
@@ -890,7 +917,12 @@ def _self_check():
     assert de.notna().all() and de[0] == de.max(), f"v24 whale not on top: {de.round(2).tolist()}"
     assert dollar_profit_v24_dualengine(d2)[0] < de[0], "v24 must still evict the f3-flagged whale"
     assert dollar_profit_v24_dualengine(demo).equals(de), "v24 must be deterministic"
-    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21+v22+v23+v24 ✓")
+    # v25 three-lever stack: clean, deterministic, whale on top, still evicts f3
+    fu = dollar_profit_v25_dualengine_margin(demo)
+    assert fu.notna().all() and fu[0] == fu.max(), f"v25 whale not on top: {fu.round(2).tolist()}"
+    assert dollar_profit_v25_dualengine_margin(d2)[0] < fu[0], "v25 must still evict the f3-flagged whale"
+    assert dollar_profit_v25_dualengine_margin(demo).equals(fu), "v25 must be deterministic"
+    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21+v22+v23+v24+v25 ✓")
 
 
 def main():
@@ -912,7 +944,8 @@ def main():
                      ("scores_v21", dollar_profit_v21_tenure),
                      ("scores_v22", dollar_profit_v22_hybrid),
                      ("scores_v23", dollar_profit_v23_hybrid_margin),
-                     ("scores_v24", dollar_profit_v24_dualengine)]:
+                     ("scores_v24", dollar_profit_v24_dualengine),
+                     ("scores_v25", dollar_profit_v25_dualengine_margin)]:
         s = fn(df)
         assert s.notna().all(), f"{name} has NaNs"
         out = pd.DataFrame({"id": df["id"], "score": s}).sort_values("id")
