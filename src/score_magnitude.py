@@ -515,6 +515,39 @@ def dollar_profit_v21_tenure(df: pd.DataFrame, w_ten: float = TENURE_W) -> pd.Se
     return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
 
 
+# v22 (SWING BET, 2026-07-01): a BASIS TRANSFORM — the one genuinely-untested, defensible, orthogonal
+# lever from the fresh problem-statement+data sweep ([[assumptions]] A34). v19 std-scales every term, which
+# lets a MODERATE specialty spender's fat right tail masquerade as a whale (weight·z(f9-lodging) can spike a
+# ~$1.6K-mean category). v22 keeps f7 (dominant general spend) and f1 (revolving balance) on the DOLLAR/std
+# basis — they are linear-in-$ booked revenue (interchange, net interest) AND they carry the 15,721
+# consensus-core f7-whales whose in-rate is 0.999 across every submission v5->v19 (demoting them is the
+# LB-REJECTED direction, v6/v8) — but RANK-normalizes (percentile) the four small specialty cats f6/f8/f9/f10
+# so a member can no longer clear the top-20% cutoff on one inflated specialty category. Validated: whale
+# in-rate held 0.999 (NOT the losing direction), Jaccard 0.863 vs v19 (swaps 7,330 boundary members ~ the
+# ~5,100-member gap to the 0.91 leaders), 0 NaN, 0 f3 in top-20%, deterministic. The LB-predictor is
+# STRUCTURALLY BLIND to a basis change (it is fit to 13 std-scale submissions -> scores any basis change
+# "far->bad"; it rates v22 at 0.822, which is NOT informative), so v22 CANNOT be screened -> it is a
+# submission-only bet. Bounded downside: v19 (0.859) is banked and best-score-counts. Never uses id.
+V22_DOLLAR_W = {"f7": 0.738, "f1": 0.738}                          # kept on the dollar/std basis
+V22_RANK_W = {"f8": 0.348, "f10": 0.137, "f6": 0.060, "f9": 0.060}  # rank-normalized specialty cats
+
+
+def dollar_profit_v22_hybrid(df: pd.DataFrame) -> pd.Series:
+    """v22: v19's engine with the small specialty spend cats (f6/f8/f9/f10) RANK-normalized instead of
+    std-scaled, while f7 and revolving balance f1 stay on the dollar/std basis (protects the consensus-core
+    whales). A boundary-only basis transform — the one untested orthogonal lever (A34). Deterministic."""
+    f = df.fillna(0.0)
+    score = np.zeros(len(df))
+    for k, wv in V22_DOLLAR_W.items():
+        score += wv * f[k].values / (f[k].values.std() + 1e-9)
+    for k, wv in V22_RANK_W.items():
+        pct = pd.Series(f[k].values).rank(pct=True).values     # percentile in [0,1] — compresses the fat tail
+        score += wv * pct / (pct.std() + 1e-9)
+    score += RECOVERED_RISK_W * _z(-(f.f11.values * f.f1.values))
+    s = pd.Series(score, index=df.index)
+    return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
+
+
 # === v16+ / 2026-06-30: NON-LINEAR forms — the reach toward the 0.91 leaders ============================
 # Context (decision-log 2026-06-30; A23): the LINEAR weighted-sum family caps ~0.81-0.85 (the re-fit with
 # v11min+v15 added STILL can't reproduce v15's 0.827 — implied 0.815, LOO 0.790 — and recovers NEGATIVE
@@ -779,7 +812,12 @@ def _self_check():
     assert tn.notna().all() and tn[0] == tn.max(), f"v21 whale not on top: {tn.round(2).tolist()}"
     assert dollar_profit_v21_tenure(d2)[0] < tn[0], "v21 must still evict the f3-flagged whale"
     assert dollar_profit_v21_tenure(demo).equals(tn), "v21 must be deterministic"
-    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21 ✓")
+    # v22 hybrid-basis: clean, deterministic, whale on top, still evicts f3
+    hb = dollar_profit_v22_hybrid(demo)
+    assert hb.notna().all() and hb[0] == hb.max(), f"v22 whale not on top: {hb.round(2).tolist()}"
+    assert dollar_profit_v22_hybrid(d2)[0] < hb[0], "v22 must still evict the f3-flagged whale"
+    assert dollar_profit_v22_hybrid(demo).equals(hb), "v22 must be deterministic"
+    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21+v22 ✓")
 
 
 def main():
@@ -798,7 +836,8 @@ def main():
                      ("scores_v18", dollar_profit_v18_riskfloor),
                      ("scores_v19", dollar_profit_v19_lending),
                      ("scores_v20", dollar_profit_v20_lending2),
-                     ("scores_v21", dollar_profit_v21_tenure)]:
+                     ("scores_v21", dollar_profit_v21_tenure),
+                     ("scores_v22", dollar_profit_v22_hybrid)]:
         s = fn(df)
         assert s.notna().all(), f"{name} has NaNs"
         out = pd.DataFrame({"id": df["id"], "score": s}).sort_values("id")
