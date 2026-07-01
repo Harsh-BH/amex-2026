@@ -548,6 +548,34 @@ def dollar_profit_v22_hybrid(df: pd.DataFrame) -> pd.Series:
     return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
 
 
+# v23 (2026-07-01): STACK the two confirmed post-v19 gains — v22's basis transform (LB 0.866, +0.007) PLUS
+# the precise per-$ net-margin lever. Card economics (brief slide 8): travel (airline f6, lodging f9) earns
+# 5x reward points (~7.5c/$ cost) vs ~2.2c/$ interchange => net-NEGATIVE per-$ margin; general/ent/dining
+# (1x) => net-positive. The margin term z(Σ margin·spend) is STD-BASIS-additive, so unlike the basis change
+# it IS visible to the LB-predictor, which scored it +0.018 on the v19 base (A31, candidate B) — the strongest
+# positive signal we have for any next lever. On v22 it moves ~4,300 boundary members further in the SAME
+# direction v22 won (gradient-compass CONTINUES; whales held 0.999). Deterministic; never uses id.
+V23_MARGIN = {"f6": -0.053, "f9": -0.053, "f7": 0.007, "f8": 0.007, "f10": 0.007}   # per-$ net margin (5x vs 1x)
+V23_MARGIN_W = 0.15                                                                  # predictor-backed on v19 (+0.018 at 0.15-0.20)
+
+
+def dollar_profit_v23_hybrid_margin(df: pd.DataFrame) -> pd.Series:
+    """v23: v22 hybrid-basis (f7/f1 dollar, specialty cats ranked) PLUS the precise per-$ net-margin term
+    (travel's 5x-reward thin margin). Stacks the LB-confirmed basis transform with the predictor-backed
+    margin lever. Deterministic; never uses id."""
+    f = df.fillna(0.0)
+    score = np.zeros(len(df))
+    for k, wv in V22_DOLLAR_W.items():                                  # f7, f1 on the dollar/std basis
+        score += wv * f[k].values / (f[k].values.std() + 1e-9)
+    for k, wv in V22_RANK_W.items():                                    # f6/f8/f9/f10 rank-normalized
+        pct = pd.Series(f[k].values).rank(pct=True).values
+        score += wv * pct / (pct.std() + 1e-9)
+    score += RECOVERED_RISK_W * _z(-(f.f11.values * f.f1.values))       # expected credit loss
+    score += V23_MARGIN_W * _z(sum(m * f[k].values for k, m in V23_MARGIN.items()))   # precise per-$ margin
+    s = pd.Series(score, index=df.index)
+    return s.mask(pd.Series(f.f3.values == 1, index=df.index), s.min() - 1.0)
+
+
 # === v16+ / 2026-06-30: NON-LINEAR forms — the reach toward the 0.91 leaders ============================
 # Context (decision-log 2026-06-30; A23): the LINEAR weighted-sum family caps ~0.81-0.85 (the re-fit with
 # v11min+v15 added STILL can't reproduce v15's 0.827 — implied 0.815, LOO 0.790 — and recovers NEGATIVE
@@ -817,7 +845,12 @@ def _self_check():
     assert hb.notna().all() and hb[0] == hb.max(), f"v22 whale not on top: {hb.round(2).tolist()}"
     assert dollar_profit_v22_hybrid(d2)[0] < hb[0], "v22 must still evict the f3-flagged whale"
     assert dollar_profit_v22_hybrid(demo).equals(hb), "v22 must be deterministic"
-    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21+v22 ✓")
+    # v23 hybrid-basis + margin: clean, deterministic, whale on top, still evicts f3
+    hm = dollar_profit_v23_hybrid_margin(demo)
+    assert hm.notna().all() and hm[0] == hm.max(), f"v23 whale not on top: {hm.round(2).tolist()}"
+    assert dollar_profit_v23_hybrid_margin(d2)[0] < hm[0], "v23 must still evict the f3-flagged whale"
+    assert dollar_profit_v23_hybrid_margin(demo).equals(hm), "v23 must be deterministic"
+    print("OK score_magnitude.py self-check:", p.round(1).tolist(), "| v11+v15+v16(NL)+v18+v19+v20+v21+v22+v23 ✓")
 
 
 def main():
@@ -837,7 +870,8 @@ def main():
                      ("scores_v19", dollar_profit_v19_lending),
                      ("scores_v20", dollar_profit_v20_lending2),
                      ("scores_v21", dollar_profit_v21_tenure),
-                     ("scores_v22", dollar_profit_v22_hybrid)]:
+                     ("scores_v22", dollar_profit_v22_hybrid),
+                     ("scores_v23", dollar_profit_v23_hybrid_margin)]:
         s = fn(df)
         assert s.notna().all(), f"{name} has NaNs"
         out = pd.DataFrame({"id": df["id"], "score": s}).sort_values("id")
