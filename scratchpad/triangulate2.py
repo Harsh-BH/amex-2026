@@ -37,7 +37,14 @@ OBS = {"v1": .449, "v2": .465, "v3": .614, "v4": .609, "v5": .733, "v6": .675, "
 FORM_CLUSTER = ["v22", "v24", "v25", "v26"]
 
 CORE = ["z6", "z7", "z8", "z9", "z10", "r6", "r7", "r8", "r9", "r10", "z1", "r1", "exl", "dual", "f3neg"]
-EXTRAS = ["ben", "eng", "f4l", "f21l", "f17z", "f5z", "f2neg", "nbd", "rcat"]
+EXTRAS = ["ben", "eng", "f4l", "f21l", "f17z", "f5z", "f2neg", "nbd", "rcat",
+          # round-3 candidates (2026-07-02): risk-shape + balance-curvature + winsor-rescue
+          "f11n",    # standalone risk penalty (prices risk for TRANSACTORS too — core exl is 0 when f1=0)
+          "f11cat",  # expected loss on spend receivables (charge-card risk scales with spend carry)
+          "sq1",     # sqrt balance (explicit concavity, distinct from rank)
+          "lg1",     # log1p balance (stronger concavity)
+          "util",    # utilization f1/f17 (draw intensity on the granted line)
+          "capfix"]  # f1-winsor rescue: at-cap members ordered by their lend line
 
 
 def _scale(v: np.ndarray) -> np.ndarray:
@@ -78,6 +85,15 @@ def build():
     t["f2neg"] = _scale(-f["f2"].to_numpy())            # attrition calls
     t["nbd"] = _scale(-df["f6"].isna().to_numpy(float)) # explicit no-breakdown demotion flag
     t["rcat"] = _scale(_pct(catsum))                    # rank of total category spend
+    f11v = f["f11"].to_numpy()
+    t["f11n"] = _scale(-f11v)                           # standalone risk (hits transactors too)
+    t["f11cat"] = _scale(-(f11v * catsum))              # expected loss on spend receivables
+    t["sq1"] = _scale(np.sqrt(np.clip(f1v, 0, None)))   # concave balance
+    t["lg1"] = _scale(np.log1p(np.clip(f1v, 0, None)))  # strongly concave balance
+    f17v = f["f17"].to_numpy()
+    t["util"] = _scale(np.where(f17v > 0, f1v / np.maximum(f17v, 1.0), 0.0))  # line utilization
+    cap1 = f1v >= np.nanmax(f1v) - 1e-6                 # the ~2.6% winsorized-at-cap balances
+    t["capfix"] = _scale(np.where(cap1, f17v, 0.0))     # order at-cap members by lend line
     names = CORE + EXTRAS
     T = np.column_stack([t[k] for k in names]).astype(np.float32)
     M = np.zeros((len(OBS), N), bool)
@@ -101,17 +117,21 @@ def load():
 _CTX: dict = {}
 
 
+OBS_POW = 2.0   # constraint weighting: w_i ∝ (obs_i/max_obs)^OBS_POW. A/B'd 2026-07-02 (tri2_ab.py):
+                # frontier LOO mean|err| 0.0066 at p=2 vs 0.0114 uniform vs 0.0136 at p=4 — p=2 adopted.
+
+
 def _loss_vec(X):
     """scipy vectorized mode: X has shape (n_params, S); return (S,) energies."""
     W = np.atleast_2d(X.T)                                # (S, n_params)
     Wn = W / (np.linalg.norm(W, axis=1, keepdims=True) + 1e-12)
     SC = _CTX["T"] @ Wn.T.astype(np.float32)              # (500K, S) — BLAS-parallel
-    M, obs = _CTX["M"], _CTX["obs"]
+    M, obs, cw = _CTX["M"], _CTX["obs"], _CTX["cw"]
     out = np.empty(len(Wn))
     for j in range(len(Wn)):
         tidx = np.argpartition(-SC[:, j], TOPK)[:TOPK]
         ov = M[:, tidx].sum(axis=1) / TOPK
-        out[j] = ((ov - obs) ** 2).sum() + REG * np.abs(Wn[j]).sum()
+        out[j] = (cw * (ov - obs) ** 2).sum() + REG * np.abs(Wn[j]).sum()
     return out
 
 
@@ -154,6 +174,9 @@ def fit(T, M, keys_all, fit_keys, names, active_names=None, seed=SEED, maxiter=1
     _CTX["T"] = np.ascontiguousarray(T[:, active])
     _CTX["M"] = np.ascontiguousarray(M[rows])
     _CTX["obs"] = np.array([OBS[k] for k in fit_keys])
+    ov = _CTX["obs"]
+    cw = (ov / ov.max()) ** OBS_POW
+    _CTX["cw"] = cw * len(cw) / cw.sum()                  # normalized so total weight = n (RMSE comparable)
     rng = np.random.default_rng(seed)
     res = differential_evolution(_loss_vec, [(-3, 3)] * len(active),
                                  init=_pop(names, active, rng, popsize), mutation=(0.4, 1.2),
@@ -321,5 +344,8 @@ def candidates():
 
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "build"
-    {"build": build, "fit-core": fit_core, "holdout": holdout, "loo": loo,
-     "extras": extras, "posterior": posterior, "candidates": candidates}[stage]()
+    if stage == "posterior" and len(sys.argv) > 2:
+        posterior(int(sys.argv[2]))
+    else:
+        {"build": build, "fit-core": fit_core, "holdout": holdout, "loo": loo,
+         "extras": extras, "posterior": posterior, "candidates": candidates}[stage]()
