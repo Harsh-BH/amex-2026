@@ -32,7 +32,8 @@ SPEND = ["f6", "f7", "f8", "f9", "f10"]
 
 OBS = {"v1": .449, "v2": .465, "v3": .614, "v4": .609, "v5": .733, "v6": .675, "v7": .768,
        "v8": .681, "v9": .727, "v10": .805, "v11min": .823, "v15": .827, "v19": .859,
-       "v21": .851, "v22": .866, "v24": .880, "v25": .866, "v26": .843}
+       "v21": .851, "v22": .866, "v24": .880, "v25": .866, "v26": .843,
+       "v27": .895}   # 2026-07-02: the recovered-consensus itself — the 19th, most-informative constraint
 FORM_CLUSTER = ["v22", "v24", "v25", "v26"]
 
 CORE = ["z6", "z7", "z8", "z9", "z10", "r6", "r7", "r8", "r9", "r10", "z1", "r1", "exl", "dual", "f3neg"]
@@ -297,7 +298,7 @@ def candidates():
 
     print("=== F. posterior-expected LB per candidate ===")
     print(f"(calibration anchors first: E[LB] should track the ACTUAL LB if the posterior is honest)")
-    for v, actual in (("v19", .859), ("v22", .866), ("v24", .880), ("v26", .843)):
+    for v, actual in (("v19", .859), ("v22", .866), ("v24", .880), ("v26", .843), ("v27", .895)):
         ov = [(M[keys.index(v)] & p).sum() / TOPK for p in post]
         print(f"  anchor {v:<8} actual {actual:.3f}  E[LB] {np.mean(ov):.3f}")
     # never-uploaded builds (free counterfactuals)
