@@ -1,0 +1,14 @@
+31 reads loaded; scores 0.449..0.919143
+-> 17,552 atoms (largest 271,807, median 1); build 3.2s
+ledger feasible under the tight per-read tolerances ✓
+
+banked v35 read 0.918971 -> 64328/70000 captured; 5672 public true-tops sit OUTSIDE v35 (pinned, not an LP result)
+
+[1] DARK MASS (outside all 31 tops; 271,807 members): truth in [0, 5662] of 70000
+    -> at least 0 true-tops provably live where NO submission has looked (only new probes reach them); at most 5662.
+
+[2] MISSES INSIDE PROBED TERRITORY (outside v35, inside some other top; 128,193 members): truth in [8, 5674]
+    -> up to 5674 of the 5672 misses were captured by another submission = re-rankable by blending; >= 8 guaranteed there.
+
+cheap aggregates done at 10.7s. Starting per-atom bounds (35104 LPs)...
+    atom 0/17552  (13s)

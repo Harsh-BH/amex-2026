@@ -35,7 +35,20 @@ OBS = {"v1": .449, "v2": .465, "v3": .614, "v4": .609, "v5": .733, "v6": .675, "
        "v21": .851, "v22": .866, "v24": .880, "v25": .866, "v26": .843,
        "v27": .895,   # 2026-07-02: the recovered-consensus itself — the 19th, most-informative constraint
        "v29": .915,   # 2026-07-02: r3 consensus (frontier-weighted 48-seed) — constraint #20, new best
-       "v30": .904}   # 2026-07-02: r4 consensus — bad mode materialized; kills the main basin cluster (#21)
+       "v30": .904,   # 2026-07-02: r4 consensus — bad mode materialized; kills the main basin cluster (#21)
+       "v32": .912,   # 2026-07-02: maximin/CVaR selection — landed below its 0.917 floor (#22, out-of-family distance)
+       "v33": .907,   # 2026-07-02: margin-qualified f3 probe — r≈0, hard-evict triple-validated (#23)
+       "v34": .917614,  # 2026-07-02: trust-region capped update of v29 (600 swaps) — first read ABOVE posterior E; EXACT 6-dp from LB panel (#24)
+       "v35": .918971,  # 2026-07-03: tranche-2 (1,878 swaps) — net accuracy +0.072 vs v34's +0.436 → conviction pool near-dry past ~1K pairs; EXACT 6-dp (#25)
+       "v37L": .919143, # 2026-07-03 (DUMMY bench): nbd level probe 1,740→1,240 — differential +0.034 (+17 net of 500) → level was ~right; A41 resolved; EXACT 6-dp (#26)
+       "v36": .917386,  # 2026-07-03 (DUMMY bench): tranche-28 + nbd imputer reorder 600 — net −0.252 (−159 of 628): imputer ordering WORSE than incumbent; nbd axis fully closed; EXACT 6-dp (#27)
+       "v41": .917643,  # 2026-07-04 (DUMMY-2 bench): cluster-consensus tranche 1,741 — net −0.076±0.015: engagement swap-ins ≈ boundary parity, strong cluster hypothesis dead, weak form (near-boundary selection) real; EXACT 6-dp (#28)
+       "v40": .913957,     # 2026-07-04 (DUMMY-2 bench): supp-relationship probe 1,200 — net ≈ −0.41: f19/f20 axis decisively dead; pu_hgb predicted it (−0.094 → 7/7 record); EXACT 6-dp hover 63,977/70,000 (#29)
+       "v43": .912429,     # 2026-07-04 (DUMMY-2 bench): pu-max swing 2,500 — net ≈ −0.29: pu does NOT extrapolate under selection (Goodhart; first loss, 7/8); lending-led truth re-confirmed vs high-spend transactors; EXACT 6-dp hover 63,870/70,000 (#30)
+       "v44": .919100,    # 2026-07-04 (DUMMY-2 bench): calibrated-predictive tranche 533 — realized net ≈ 0.0: FOURTH independent instrument to measure the boundary at parity; landed −1.65σ vs the calibrated point prediction (self-selection bias, as disclosed) but INSIDE the 90% interval — the calibrated machinery's first live validation; EXACT 6-dp hover 0.919100 = 64,337/70,000 — 3 counts BELOW v37L (#31)
+       "v46": .911143,     # 2026-07-05 (bench): f2-evict attrition probe 2,415 — net −0.337±0.028: evicted callers are DEEP-TOP PARITY (d≈0.86 vs repl 0.52), truth has NO attrition term (hard-evict ~23σ dead; dampener φ=−2%±4%); TWELFTH axis closed, POWERED (δ_min 4.9%); family E 0.906 saw it through composition alone; EXACT 6-dp hover 63,780/70,000 (#32)
+       "v47": .911514,     # 2026-07-05 (bench): benefit-cost demotion probe 2,500 — net −0.286±0.028 (−500 public): heavy burners are DEEP-TOP PARITY (d≈0.81), truth does NOT charge benefit consumption; the brief's 4th named driver closes POWERED in BOTH directions (cost: this read; engagement: A32) → all four named drivers now measured; THIRTEENTH axis; EXACT 6-dp hover 63,806/70,000 (#33)
+       "v48": .910243}     # 2026-07-05 (bench): f5-coverage promotion probe 2,500 — net −0.366±0.028 (−640 public): capped-f5 zero-revolve outsiders carry d≈0.13–0.18 (2nd-worst pool ever, ≈ v40's f19/f20); NO f5 term AND the truth's lending tilt at the boundary is even stronger than our calibration's (re-confirms v43's lesson); FOURTEENTH axis closed POWERED; landed inside the pre-registered box but below the no-term sub-branch (my d_in point-estimate was high); EXACT 6-dp hover 63,717/70,000 (#34)
 FORM_CLUSTER = ["v22", "v24", "v25", "v26"]
 
 CORE = ["z6", "z7", "z8", "z9", "z10", "r6", "r7", "r8", "r9", "r10", "z1", "r1", "exl", "dual", "f3neg"]

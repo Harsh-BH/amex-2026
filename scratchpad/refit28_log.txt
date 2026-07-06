@@ -1,0 +1,180 @@
+cached: T (500000, 30) float32, masks (28, 500000), -> /home/harsh1/github-repos/amex-2026/scratchpad/tri2_cache.npz
+=== A. core fit, all 18 constraints (15 terms) ===
+weights: {'z6': 0.153, 'z7': 0.401, 'z8': -0.045, 'z9': -0.101, 'z10': 0.299, 'r6': -0.214, 'r7': -0.105, 'r8': 0.123, 'r9': 0.255, 'r10': -0.439, 'z1': 0.414, 'r1': -0.087, 'exl': 0.129, 'dual': 0.165, 'f3neg': 0.402}
+in-sample RMSE 0.0029
+      v1: fit 0.454 actual 0.449 err +0.005
+      v2: fit 0.468 actual 0.465 err +0.003
+      v3: fit 0.620 actual 0.614 err +0.006
+      v4: fit 0.603 actual 0.609 err -0.006
+      v5: fit 0.733 actual 0.733 err +0.000
+      v6: fit 0.679 actual 0.675 err +0.004
+      v7: fit 0.764 actual 0.768 err -0.004
+      v8: fit 0.676 actual 0.681 err -0.005
+      v9: fit 0.730 actual 0.727 err +0.003
+     v10: fit 0.805 actual 0.805 err -0.000
+  v11min: fit 0.824 actual 0.823 err +0.001
+     v15: fit 0.822 actual 0.827 err -0.005
+     v19: fit 0.861 actual 0.859 err +0.002
+     v21: fit 0.849 actual 0.851 err -0.002
+     v22: fit 0.869 actual 0.866 err +0.003
+     v24: fit 0.879 actual 0.880 err -0.001
+     v25: fit 0.865 actual 0.866 err -0.001
+     v26: fit 0.842 actual 0.843 err -0.001
+     v27: fit 0.894 actual 0.895 err -0.001
+     v29: fit 0.912 actual 0.915 err -0.003
+     v30: fit 0.902 actual 0.904 err -0.002
+     v32: fit 0.915 actual 0.912 err +0.003
+     v33: fit 0.907 actual 0.907 err +0.000
+     v34: fit 0.916 actual 0.918 err -0.002
+     v35: fit 0.922 actual 0.919 err +0.003
+    v37L: fit 0.920 actual 0.919 err +0.000
+     v36: fit 0.917 actual 0.917 err -0.000
+     v41: fit 0.917 actual 0.918 err -0.000
+seed 42: RMSE 0.0065  weights {'z1': np.float64(0.044), 'z7': np.float64(0.025), 'z9': np.float64(0.011), 'z10': np.float64(-0.0), 'exl': np.float64(0.04), 'f3neg': np.float64(0.998)}
+seed 49: RMSE 0.0066  weights {'z1': np.float64(0.042), 'z7': np.float64(0.024), 'z9': np.float64(0.011), 'z10': np.float64(-0.0), 'exl': np.float64(0.038), 'f3neg': np.float64(0.998)}
+seed 77: RMSE 0.0065  weights {'z1': np.float64(0.338), 'z7': np.float64(0.192), 'z9': np.float64(0.089), 'z10': np.float64(-0.001), 'exl': np.float64(0.305), 'f3neg': np.float64(0.865)}
+
+BEST 6-term fit RMSE 0.0065 (15-term reference: 0.0027)
+      v1: fit 0.464 actual 0.449 err +0.015
+      v2: fit 0.478 actual 0.465 err +0.013
+      v3: fit 0.624 actual 0.614 err +0.010
+      v4: fit 0.618 actual 0.609 err +0.009
+      v5: fit 0.734 actual 0.733 err +0.001
+      v6: fit 0.681 actual 0.675 err +0.006
+      v7: fit 0.768 actual 0.768 err -0.000
+      v8: fit 0.687 actual 0.681 err +0.006
+      v9: fit 0.728 actual 0.727 err +0.001
+     v10: fit 0.809 actual 0.805 err +0.004
+  v11min: fit 0.828 actual 0.823 err +0.005
+     v15: fit 0.825 actual 0.827 err -0.002
+     v19: fit 0.853 actual 0.859 err -0.006
+     v21: fit 0.843 actual 0.851 err -0.008
+     v22: fit 0.864 actual 0.866 err -0.002
+     v24: fit 0.874 actual 0.880 err -0.006
+     v25: fit 0.857 actual 0.866 err -0.009
+     v26: fit 0.834 actual 0.843 err -0.009
+     v27: fit 0.898 actual 0.895 err +0.003
+     v29: fit 0.917 actual 0.915 err +0.002
+     v30: fit 0.894 actual 0.904 err -0.010
+     v32: fit 0.913 actual 0.912 err +0.001
+     v33: fit 0.908 actual 0.907 err +0.001
+     v34: fit 0.920 actual 0.918 err +0.003
+     v35: fit 0.924 actual 0.919 err +0.005
+    v37L: fit 0.923 actual 0.919 err +0.004
+     v36: fit 0.921 actual 0.917 err +0.003
+     v41: fit 0.921 actual 0.918 err +0.003
+saved scratchpad/tri2_fit6_scores.csv
+=== A. parsimony: CORE + [f21p, f4p] (3 seeds) ===
+  seed 42: RMSE 0.0035  f21p +0.058  f4p -0.001
+  seed 49: RMSE 0.0047  f21p +0.034  f4p +0.042
+  seed 77: RMSE 0.0032  f21p +0.099  f4p +0.084
+
+=== B. posterior over CORE+4 (16 seeds) ===
+  seed 60: RMSE 0.0031
+  seed 61: RMSE 0.0036
+  seed 62: RMSE 0.0039
+  seed 63: RMSE 0.0034
+  seed 64: RMSE 0.0024
+  seed 65: RMSE 0.0038
+  seed 66: RMSE 0.0030
+  seed 67: RMSE 0.0035
+  seed 68: RMSE 0.0035
+  seed 69: RMSE 0.0027
+  seed 70: RMSE 0.0031
+  seed 71: RMSE 0.0031
+  seed 72: RMSE 0.0036
+  seed 73: RMSE 0.0028
+  seed 74: RMSE 0.0030
+  seed 75: RMSE 0.0034
+kept 12/16 (RMSE 0.0024..0.0035)
+cluster-term posterior weights (median [min..max], sign-agreement):
+  f21p５５ +0.071  [-0.004..+0.142]  sign 92%
+  f4p５５５ +0.047  [+0.007..+0.129]  sign 100%
+  f19z５５ -0.049  [-0.230..+0.136]  sign 58%
+  f22r５５ -0.088  [-0.167..+0.149]  sign 58%
+  z1５５５５ +0.454  [+0.321..+0.625]  sign 100%
+  z7５５５５ +0.423  [+0.358..+0.621]  sign 100%
+  exl５５５ +0.245  [+0.146..+0.388]  sign 100%
+  f3neg５ +0.465  [+0.336..+0.695]  sign 100%
+saved tri3_posterior_masks.npy (12, 500000)
+
+v41 conviction curve (cluster-posterior vote-gap vs v35 set):
+  N=  300: gap@N +0.83
+  N=  600: gap@N +0.67
+  N= 1000: gap@N +0.58
+  N= 1500: gap@N +0.42
+  N= 2500: gap@N +0.25
+  N= 4000: gap@N +0.08
+  N= 6000: gap@N -0.08
+  N= 8000: gap@N -0.25
+E[LB | cluster-posterior] for v35's set: 0.920 (actual 0.918971)
+swap-IN preview at N=1500: f21 med 218,824  f4 med 238,476  vote med 10/12
+  seed 42: RMSE 0.7892
+  seed 43: RMSE 0.0034
+  seed 44: RMSE 0.0054
+  seed 45: RMSE 0.0048
+  seed 46: RMSE 0.0048
+  seed 47: RMSE 0.0043
+  seed 48: RMSE 0.0042
+  seed 49: RMSE 0.0035
+  seed 50: RMSE 0.0071
+  seed 51: RMSE 0.0042
+  seed 52: RMSE 0.0047
+  seed 53: RMSE 0.0049
+  seed 54: RMSE 0.0031
+  seed 55: RMSE 0.0046
+  seed 56: RMSE 0.0036
+  seed 57: RMSE 0.0040
+  seed 58: RMSE 0.0049
+  seed 59: RMSE 0.0052
+  seed 60: RMSE 0.0037
+  seed 61: RMSE 0.0041
+  seed 62: RMSE 0.0046
+  seed 63: RMSE 0.0039
+  seed 64: RMSE 0.0046
+  seed 65: RMSE 0.0032
+  seed 66: RMSE 0.0055
+  seed 67: RMSE 0.0041
+  seed 68: RMSE 0.0044
+  seed 69: RMSE 0.0048
+  seed 70: RMSE 0.0052
+  seed 71: RMSE 0.0048
+  seed 72: RMSE 0.0032
+  seed 73: RMSE 0.0051
+  seed 74: RMSE 0.0053
+  seed 75: RMSE 0.0040
+  seed 76: RMSE 0.0042
+  seed 77: RMSE 0.0042
+  seed 78: RMSE 0.0056
+  seed 79: RMSE 0.0062
+  seed 80: RMSE 0.0059
+  seed 81: RMSE 0.0042
+  seed 82: RMSE 0.0050
+  seed 83: RMSE 0.0056
+  seed 84: RMSE 0.0034
+  seed 85: RMSE 0.0048
+  seed 86: RMSE 0.0051
+  seed 87: RMSE 0.0035
+  seed 88: RMSE 0.0050
+  seed 89: RMSE 0.0048
+=== E. posterior: 25/48 fits kept (RMSE 0.0031..0.0047) ===
+per-term posterior weights (median [min..max], sign-agreement):
+  z6     -0.035  [-0.213..+0.278]  sign 56%
+  z7     +0.324  [+0.153..+0.721]  sign 100%
+  z8     +0.004  [-0.059..+0.108]  sign 52%
+  z9     +0.055  [-0.180..+0.278]  sign 60%
+  z10    +0.247  [-0.052..+0.435]  sign 84%
+  r6     +0.055  [-0.336..+0.278]  sign 60%
+  r7     -0.018  [-0.357..+0.379]  sign 56%
+  r8     +0.038  [-0.230..+0.108]  sign 68%
+  r9     +0.051  [-0.136..+0.308]  sign 64%
+  r10    -0.324  [-0.547..+0.448]  sign 68%
+  z1     +0.399  [+0.193..+0.659]  sign 100%
+  r1     +0.057  [-0.181..+0.630]  sign 68%
+  exl    +0.150  [+0.070..+0.330]  sign 100%
+  dual   +0.064  [-0.275..+0.226]  sign 80%
+  f3neg  +0.422  [+0.193..+0.831]  sign 100%
+posterior top-20% pairwise overlap: mean 0.901  min 0.847  max 0.977
+E[overlap | posterior]: v24 0.878   posterior-consensus 0.932
+consensus vs v24 overlap: 0.898
+saved scratchpad/tri2_consensus_scores.csv + tri2_posterior_masks.npy

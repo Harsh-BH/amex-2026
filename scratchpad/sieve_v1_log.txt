@@ -1,0 +1,7 @@
+grid size: 81,000
+grid size: 81,000
+batch 40/324  evaluated 10,000  best max|err| 0.0308
+batch 80/324  evaluated 20,000  best max|err| 0.0297
+batch 120/324  evaluated 30,000  best max|err| 0.0126
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown: {'/mp-mqtfdork', '/mp-mfqf2iob', '/mp-enc74ddm', '/mp-_oz781_e', '/mp-zc_op9qg', '/mp-ekxfov1r'}
+  warnings.warn(

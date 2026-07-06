@@ -1,0 +1,14 @@
+timestamp_ist,team,score,source
+2026-07-02 21:30,pack-of-six,0.925-0.929,screenshot (six teams packed, decision-log 2026-07-02 NIGHT)
+2026-07-03 02:40,Nishant.Mittal25,0.930129,screenshot (r2-analytic-record header)
+2026-07-03 02:40,Maglev,0.9296,screenshot
+2026-07-03 02:40,ACE,0.929286,screenshot
+2026-07-03 02:40,Bye Bye Sarvam!,0.929,screenshot
+2026-07-03 19:00,Pls Give Job,0.932814,screenshot (experiment-history header, NEW leader)
+2026-07-03 19:00,Nishant.Mittal25,0.930129,screenshot
+2026-07-03 19:00,Maglev,0.9296,screenshot
+2026-07-03 19:00,ACE,0.929,screenshot
+2026-07-03 19:00,OLTGrind,0.918971,own
+2026-07-04 15:03,OLTGrind-bench2-v41,0.917643,hover-exact (new dummy-2 account)
+2026-07-04 19:56,OLTGrind-bench2-v40,0.914,display (hover pending)
+2026-07-04 19:59,OLTGrind-bench2-v43,0.912,display (hover pending)

@@ -1,0 +1,63 @@
+cached: T (500000, 30) float32, masks (26, 500000), -> /home/harsh1/github-repos/amex-2026/scratchpad/tri2_cache.npz
+=== A. core fit, all 18 constraints (15 terms) ===
+weights: {'z6': -0.154, 'z7': 0.237, 'z9': 0.254, 'z10': 0.055, 'r6': 0.221, 'r7': 0.323, 'r8': 0.034, 'r9': -0.11, 'r10': 0.045, 'z1': 0.442, 'r1': 0.48, 'exl': 0.283, 'dual': -0.3, 'f3neg': 0.296}
+in-sample RMSE 0.0027
+      v1: fit 0.456 actual 0.449 err +0.007
+      v2: fit 0.470 actual 0.465 err +0.005
+      v3: fit 0.616 actual 0.614 err +0.002
+      v4: fit 0.607 actual 0.609 err -0.002
+      v5: fit 0.732 actual 0.733 err -0.001
+      v6: fit 0.681 actual 0.675 err +0.006
+      v7: fit 0.768 actual 0.768 err +0.000
+      v8: fit 0.678 actual 0.681 err -0.003
+      v9: fit 0.724 actual 0.727 err -0.003
+     v10: fit 0.806 actual 0.805 err +0.001
+  v11min: fit 0.825 actual 0.823 err +0.002
+     v15: fit 0.825 actual 0.827 err -0.002
+     v19: fit 0.859 actual 0.859 err -0.000
+     v21: fit 0.848 actual 0.851 err -0.003
+     v22: fit 0.869 actual 0.866 err +0.003
+     v24: fit 0.879 actual 0.880 err -0.001
+     v25: fit 0.867 actual 0.866 err +0.001
+     v26: fit 0.840 actual 0.843 err -0.003
+     v27: fit 0.895 actual 0.895 err -0.000
+     v29: fit 0.915 actual 0.915 err +0.000
+     v30: fit 0.901 actual 0.904 err -0.003
+     v32: fit 0.914 actual 0.912 err +0.002
+     v33: fit 0.908 actual 0.907 err +0.001
+     v34: fit 0.919 actual 0.918 err +0.002
+     v35: fit 0.917 actual 0.919 err -0.002
+    v37L: fit 0.921 actual 0.919 err +0.002
+seed 42: RMSE 0.0065  weights {'z1': np.float64(0.128), 'z7': np.float64(0.072), 'z9': np.float64(0.034), 'z10': np.float64(-0.0), 'exl': np.float64(0.111), 'f3neg': np.float64(0.982)}
+seed 49: RMSE 0.0065  weights {'z1': np.float64(0.029), 'z7': np.float64(0.016), 'z9': np.float64(0.008), 'z10': np.float64(-0.0), 'exl': np.float64(0.025), 'f3neg': np.float64(0.999)}
+seed 77: RMSE 0.0065  weights {'z1': np.float64(0.034), 'z7': np.float64(0.019), 'z9': np.float64(0.009), 'z10': np.float64(0.0), 'exl': np.float64(0.029), 'f3neg': np.float64(0.999)}
+
+BEST 6-term fit RMSE 0.0065 (15-term reference: 0.0027)
+      v1: fit 0.463 actual 0.449 err +0.014
+      v2: fit 0.477 actual 0.465 err +0.012
+      v3: fit 0.623 actual 0.614 err +0.009
+      v4: fit 0.617 actual 0.609 err +0.008
+      v5: fit 0.733 actual 0.733 err +0.000
+      v6: fit 0.681 actual 0.675 err +0.006
+      v7: fit 0.767 actual 0.768 err -0.001
+      v8: fit 0.687 actual 0.681 err +0.006
+      v9: fit 0.727 actual 0.727 err +0.000
+     v10: fit 0.809 actual 0.805 err +0.004
+  v11min: fit 0.828 actual 0.823 err +0.005
+     v15: fit 0.824 actual 0.827 err -0.003
+     v19: fit 0.854 actual 0.859 err -0.005
+     v21: fit 0.844 actual 0.851 err -0.007
+     v22: fit 0.864 actual 0.866 err -0.002
+     v24: fit 0.874 actual 0.880 err -0.006
+     v25: fit 0.857 actual 0.866 err -0.009
+     v26: fit 0.834 actual 0.843 err -0.009
+     v27: fit 0.899 actual 0.895 err +0.004
+     v29: fit 0.918 actual 0.915 err +0.003
+     v30: fit 0.894 actual 0.904 err -0.010
+     v32: fit 0.914 actual 0.912 err +0.002
+     v33: fit 0.909 actual 0.907 err +0.002
+     v34: fit 0.922 actual 0.918 err +0.004
+     v35: fit 0.925 actual 0.919 err +0.006
+    v37L: fit 0.924 actual 0.919 err +0.005
+saved scratchpad/tri2_fit6_scores.csv
+  seed 42: RMSE 0.0038

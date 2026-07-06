@@ -1,0 +1,46 @@
+T2 (500000, 39); testing ['f21p', 'f4p', 'f19z', 'f20z', 'f22r', 'f23r', 'mrew', 'mline', 'supb']
+BASE core15 seed 42: RMSE 0.0047
+BASE core15 seed 49: RMSE 0.0032
+
+--- greedy extras (delta vs same-seed base; meaningful if <= -0.0008 on BOTH) ---
+  +f21p  seed42: d-0.0009 w-0.013  seed49: d+0.0005 w+0.080
+  +f4p   seed42: d-0.0011 w+0.119  seed49: d+0.0020 w+0.016
+  +f19z  seed42: d-0.0007 w+0.131  seed49: d+0.0005 w-0.180
+  +f20z  seed42: d-0.0008 w-0.136  seed49: d+0.0004 w+0.217
+  +f22r  seed42: d-0.0025 w+0.157  seed49: d+0.0029 w-0.014
+  +f23r  seed42: d-0.0013 w+0.104  seed49: d+0.0006 w-0.104
+  +mrew  seed42: d-0.0011 w-0.151  seed49: d-0.0010 w-0.154
+  +mline seed42: d+0.0009 w-0.058  seed49: d+0.0013 w+0.106
+  +supb  seed42: d-0.0008 w+0.132  seed49: d+0.0006 w-0.202
+
+--- joint cluster fit: CORE + [f21p, f4p, f19z, f22r] ---
+  seed 42: RMSE 0.0018 (base 0.0047)  {'f21p': 0.029, 'f4p': 0.049, 'f19z': -0.027, 'f22r': -0.052}
+        v1: fit 0.450 actual 0.449 err +0.001
+        v2: fit 0.468 actual 0.465 err +0.003
+        v3: fit 0.612 actual 0.614 err -0.002
+        v4: fit 0.609 actual 0.609 err -0.000
+        v5: fit 0.734 actual 0.733 err +0.001
+        v6: fit 0.672 actual 0.675 err -0.003
+        v7: fit 0.768 actual 0.768 err +0.000
+        v8: fit 0.678 actual 0.681 err -0.003
+        v9: fit 0.728 actual 0.727 err +0.001
+       v10: fit 0.804 actual 0.805 err -0.001
+    v11min: fit 0.822 actual 0.823 err -0.001
+       v15: fit 0.824 actual 0.827 err -0.003
+       v19: fit 0.859 actual 0.859 err +0.000
+       v21: fit 0.854 actual 0.851 err +0.003
+       v22: fit 0.867 actual 0.866 err +0.001
+       v24: fit 0.881 actual 0.880 err +0.001
+       v25: fit 0.865 actual 0.866 err -0.001
+       v26: fit 0.844 actual 0.843 err +0.001
+       v27: fit 0.895 actual 0.895 err -0.000
+       v29: fit 0.914 actual 0.915 err -0.001
+       v30: fit 0.906 actual 0.904 err +0.002
+       v32: fit 0.913 actual 0.912 err +0.001
+       v33: fit 0.909 actual 0.907 err +0.002
+       v34: fit 0.915 actual 0.918 err -0.002
+       v35: fit 0.920 actual 0.919 err +0.001
+      v37L: fit 0.918 actual 0.919 err -0.002
+       v36: fit 0.916 actual 0.917 err -0.002
+  seed 49: RMSE 0.0017 (base 0.0032)  {'f21p': 0.002, 'f4p': 0.016, 'f19z': -0.03, 'f22r': 0.229}
+  seed 77: RMSE 0.0024 (base 0.0032)  {'f21p': 0.02, 'f4p': 0.049, 'f19z': 0.02, 'f22r': 0.074}

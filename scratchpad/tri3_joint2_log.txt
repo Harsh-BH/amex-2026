@@ -1,0 +1,45 @@
+=== A. parsimony: CORE + [f21p, f4p] (3 seeds) ===
+  seed 42: RMSE 0.0040  f21p +0.119  f4p +0.029
+  seed 49: RMSE 0.0036  f21p +0.115  f4p +0.085
+  seed 77: RMSE 0.0021  f21p +0.055  f4p +0.064
+
+=== B. posterior over CORE+4 (16 seeds) ===
+  seed 60: RMSE 0.0027
+  seed 61: RMSE 0.0027
+  seed 62: RMSE 0.0025
+  seed 63: RMSE 0.0035
+  seed 64: RMSE 0.0020
+  seed 65: RMSE 0.0028
+  seed 66: RMSE 0.0035
+  seed 67: RMSE 0.0024
+  seed 68: RMSE 0.0036
+  seed 69: RMSE 0.0020
+  seed 70: RMSE 0.0029
+  seed 71: RMSE 0.0025
+  seed 72: RMSE 0.0036
+  seed 73: RMSE 0.0044
+  seed 74: RMSE 0.0016
+  seed 75: RMSE 0.0018
+kept 4/16 (RMSE 0.0016..0.0020)
+cluster-term posterior weights (median [min..max], sign-agreement):
+  f21p５５ +0.022  [+0.021..+0.031]  sign 100%
+  f4p５５５ +0.052  [+0.049..+0.059]  sign 100%
+  f19z５５ -0.073  [-0.096..+0.034]  sign 75%
+  f22r５５ +0.149  [+0.002..+0.222]  sign 100%
+  z1５５５５ +0.549  [+0.499..+0.591]  sign 100%
+  z7５５５５ +0.311  [+0.280..+0.545]  sign 100%
+  exl５５５ +0.331  [+0.256..+0.519]  sign 100%
+  f3neg５ +0.524  [+0.447..+0.562]  sign 100%
+saved tri3_posterior_masks.npy (4, 500000)
+
+v41 conviction curve (cluster-posterior vote-gap vs v35 set):
+  N=  300: gap@N +1.00
+  N=  600: gap@N +1.00
+  N= 1000: gap@N +1.00
+  N= 1500: gap@N +1.00
+  N= 2500: gap@N +0.50
+  N= 4000: gap@N +0.50
+  N= 6000: gap@N +0.00
+  N= 8000: gap@N +0.00
+E[LB | cluster-posterior] for v35's set: 0.921 (actual 0.918971)
+swap-IN preview at N=1500: f21 med 14,161  f4 med 195,106  vote med 4/4

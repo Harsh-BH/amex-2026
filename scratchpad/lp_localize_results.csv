@@ -1,0 +1,12 @@
+pool,pool_outside_v29,lp_min,lp_max
+never-probed (outside all 23 tops),272209,0.0,7098.499999999998
+no-breakdown cohort,113958,0.0,8651.0
+"nbd degenerate (no cat, no f1, no f4)",28694,0.0,7559.518987341774
+"f3=1 (must be ~0, v33 cross-check)",54304,0.0,8478.16666666667
+f2=1 attrition-call pool,84420,0.0,8651.0
+f1-at-winsor-cap,2642,0.0,2642.0
+"lend-line pool (f17>0 & f1>0, utilization-definable)",73245,0.0,8650.999999999998
+transactor pool (f1==0),233109,0.0,8651.0
+high-risk revolvers (f11>0.10 & f1>0),47304,0.0,7932.333333333332
+v29 boundary band-out (rank 100-110K),10000,0.0,8650.999999999998
+everything else (none of the above),18627,0.0,8629.68
